@@ -1,0 +1,47 @@
+{
+  "name": "aiprompting",
+  "version": "0.1.0",
+  "description": "Improve, rewrite, debug, evaluate, and compress prompts for any LLM agent. Ships an installable Skill plus a deterministic local CLI.",
+  "keywords": [
+    "prompt-engineering",
+    "prompt-improver",
+    "skill",
+    "claude",
+    "openai",
+    "llm",
+    "cli",
+    "agent"
+  ],
+  "license": "MIT",
+  "author": "matteoscurati",
+  "type": "commonjs",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "aiprompting": "bin/aiprompting"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "SKILL.md",
+    "references/",
+    "agents/",
+    "examples/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test dist/tests/*.test.js",
+    "doctor": "node dist/src/cli.js doctor",
+    "prepare": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}

@@ -1,0 +1,56 @@
+# OpenAI agent manifest (project-local)
+#
+# This file is opt-in metadata for OpenAI-style agent hosts (Custom GPT,
+# Apps SDK, GPT Store) that want a structured pointer to this Skill.
+# It is NOT required by Claude or by the npm CLI — the canonical entrypoint
+# is SKILL.md at the package root.
+#
+# If you publish to a host that consumes a different schema, add a sibling
+# manifest (e.g. agents/gemini.yaml) without removing this one.
+
+name: aiprompting
+display_name: AIPrompting — Prompt Improver
+description: >
+  Improve, rewrite, debug, evaluate, and compress prompts for any LLM agent.
+  Use when the user asks to make a prompt better, more reliable, cheaper,
+  clearer, structured, model-specific, or agent-ready.
+version: 0.1.0
+author: matteoscurati
+license: MIT
+
+entrypoint: SKILL.md
+
+capabilities:
+  - prompt-improvement
+  - prompt-evaluation
+  - prompt-clarification
+  - prompt-compression
+  - cross-vendor-adaptation
+
+modes:
+  - final_only
+  - compact
+  - standard
+  - diagnostic
+
+references:
+  - references/prompt-quality-rubric.md
+  - references/prompt-patterns.md
+  - references/clarification-policy.md
+  - references/cost-control.md
+  - references/agent-compatibility.md
+
+cli:
+  command: aiprompting
+  doctor: aiprompting doctor
+  improve: aiprompting improve --prompt "<text>"
+
+triggers:
+  - "improve my prompt"
+  - "fix this prompt"
+  - "make this prompt better"
+  - "rewrite my prompt"
+  - "score this prompt"
+  - "ottimizza il prompt"
+  - "migliora il prompt"
+  - "rendi il prompt più chiaro"

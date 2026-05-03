@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+'use strict';
+
+const path = require('path');
+const fs = require('fs');
+
+const distCli = path.resolve(__dirname, '..', 'dist', 'src', 'cli.js');
+
+if (!fs.existsSync(distCli)) {
+  process.stderr.write(
+    'aiprompting: build artifact not found at ' + distCli + '\n' +
+    'Run "npm run build" inside the package first.\n'
+  );
+  process.exit(2);
+}
+
+const { main } = require(distCli);
+if (typeof main !== 'function') {
+  process.stderr.write('aiprompting: compiled CLI did not export main(). Rebuild required.\n');
+  process.exit(2);
+}
+process.exit(main(process.argv.slice(2)));

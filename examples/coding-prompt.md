@@ -1,0 +1,1 @@
+Refactor the function `parseUserInput` in src/parser.ts to use a state machine instead of nested if-else. Preserve the public signature. Add unit tests covering: empty input, malformed input, unicode, very long input. Do not introduce new dependencies. The codebase uses TypeScript 5.4, Node 20, no ESM. Take a deep breath and you are a world-class engineer — think step by step.

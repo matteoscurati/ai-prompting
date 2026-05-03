@@ -1,0 +1,1 @@
+Research the impact of context-window length on LLM accuracy. Summarize findings from at least 5 sources published in 2024–2026. Cover: lost-in-the-middle, context rot, mitigation strategies. Audience: ML engineers. Output: 600-word summary with inline citations and a numbered source list.

@@ -1,0 +1,1 @@
+You are an agent with web_search, file_read, and code_exec tools. Find the most-cited paper on retrieval-augmented generation from 2024, download its abstract, and produce a 200-word summary plus three follow-up research questions. If web_search returns no usable results in 3 attempts, stop and report. Cite every claim with a URL. Do not invent authors or dates.
