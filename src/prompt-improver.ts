@@ -205,11 +205,30 @@ function stripPadding(text: string): { cleaned: string; removed: Array<{ phrase:
   return { cleaned, removed: found };
 }
 
+const HELP_OPENER_RE = /^\s*(aiutami\s+a\s+|help\s+me\s+(?:to\s+)?|please\s+(?:help\s+me\s+)?|puoi\s+|can\s+you\s+|could\s+you\s+|potresti\s+|fammi\s+|dammi\s+)/i;
+
+const PADDING_LIKE_SENTENCE_RE = /^(you\s+are\s+|sei\s+un|i\s+will\s+tip|ti\s+(darò|daro|pago)|take\s+a\s+deep|fai\s+un\s+respiro|think\s+step|pensa(?:ci)?\s+passo|ragiona\s+passo|let'?s\s+think|my\s+(career|job|life)\s+depends|la\s+mia\s+(carriera|vita)\s+dipende|il\s+mio\s+(lavoro|ruolo)\s+dipende)/i;
+
+function nominalizeImperative(s: string): string {
+  const stripped = s.replace(HELP_OPENER_RE, '').trim();
+  if (!stripped) return s;
+  return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+}
+
 function extractObjective(text: string, lang: 'it' | 'en'): string | null {
   const existing = detectExistingSection(text, 'objective') || detectExistingSection(text, 'goal');
   if (existing) return existing;
-  const firstSentence = text.split(/(?<=[.!?])\s+/)[0]?.trim();
-  if (firstSentence && firstSentence.length > 8 && firstSentence.length < 280) return firstSentence;
+
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 8 && s.length < 280);
+
+  for (const candidate of sentences) {
+    if (PADDING_LIKE_SENTENCE_RE.test(candidate)) continue;
+    return HELP_OPENER_RE.test(candidate) ? nominalizeImperative(candidate) : candidate;
+  }
+
   return lang === 'it'
     ? '[ASSUNZIONE: dedurre l\'obiettivo dal prompt utente]'
     : '[ASSUMPTION: infer the objective from the user prompt]';

@@ -18,6 +18,14 @@ const PADDING_PATTERNS: Array<{ re: RegExp; label: string }> = [
   { re: /let'?s\s+think\s+(this\s+)?through\s+step\s+by\s+step[^.]*\./gi, label: 'redundant CoT request' },
   { re: /\bI\s+will\s+tip\s+you\b[^.]*\./gi, label: 'tipping bribe padding' },
   { re: /\bmy\s+(career|job|life)\s+depends\s+on\b[^.]*\./gi, label: 'guilt-trip padding' },
+  // Italian variants
+  { re: /\bsei\s+un'?(\s+)?esperto\s+(di\s+livello\s+)?mondiale\b[^.]*\./gi, label: 'world-class persona padding (it)' },
+  { re: /\bsei\s+un'?(\s+)?(IA|AI|intelligenza\s+artificiale)\s+(brillante|geniale|straordinaria|eccezionale|fantastica)\b[^.]*\./gi, label: 'flattery padding (it)' },
+  { re: /\bfai\s+un\s+respiro\s+(profondo|lento)\b[^.]*\./gi, label: 'take-a-deep-breath padding (it)' },
+  { re: /\bpensa(ci)?\s+passo\s+(?:(?:per|dopo)\s+)?passo\b[^.]*\./gi, label: 'redundant CoT request (it)' },
+  { re: /\bragiona\s+passo\s+(?:(?:per|dopo)\s+)?passo\b[^.]*\./gi, label: 'redundant CoT request (it)' },
+  { re: /\bti\s+(darò|daro|pago|pagherò)\s+(una\s+mancia|del\s+denaro|di\s+più)\b[^.]*\./gi, label: 'tipping bribe padding (it)' },
+  { re: /\b(la\s+mia|il\s+mio)\s+(carriera|lavoro|vita)\s+dipende\s+da\b[^.]*\./gi, label: 'guilt-trip padding (it)' },
 ];
 
 const FORMAT_TOKENS = [

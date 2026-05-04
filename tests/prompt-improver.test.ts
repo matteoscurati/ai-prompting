@@ -27,6 +27,55 @@ test('improvePrompt: padding is removed from generated output', () => {
     'expected at least one removed_padding change');
 });
 
+test('improvePrompt: Italian padding is removed', () => {
+  const r = improvePrompt({
+    originalPrompt: "Sei un esperto di livello mondiale. Fai un respiro profondo. Pensaci passo passo. Aiutami a scrivere una mail per chiedere un aumento.",
+  });
+  assert.ok(!/esperto di livello mondiale/i.test(r.improved),
+    'Italian "world-class" padding should be stripped');
+  assert.ok(!/respiro profondo/i.test(r.improved),
+    'Italian "deep breath" padding should be stripped');
+  assert.ok(!/passo passo/i.test(r.improved),
+    'Italian "step by step" padding should be stripped');
+  const removedLabels = r.changes.filter((c) => c.type === 'removed_padding').length;
+  assert.ok(removedLabels >= 3, `expected ≥3 padding removals, got ${removedLabels}`);
+});
+
+test('improvePrompt: objective skips padding-like first sentence', () => {
+  const r = improvePrompt({
+    originalPrompt: "Sei un esperto di livello mondiale. Aiutami a scrivere una mail di vendita per il prodotto X.",
+  });
+  const objMatch = r.improved.match(/<objective>\s*([\s\S]*?)\s*<\/objective>/);
+  assert.ok(objMatch, '<objective> tag present');
+  const obj = objMatch![1];
+  assert.ok(!/esperto di livello mondiale/i.test(obj),
+    `objective should not contain padding sentence; got "${obj}"`);
+});
+
+test('improvePrompt: imperative-help opener nominalized in objective', () => {
+  const r = improvePrompt({
+    originalPrompt: "Aiutami a scrivere una mail di vendita.",
+  });
+  const objMatch = r.improved.match(/<objective>\s*([\s\S]*?)\s*<\/objective>/);
+  assert.ok(objMatch);
+  const obj = objMatch![1];
+  assert.ok(!/^aiutami\b/i.test(obj),
+    `objective should not start with "aiutami"; got "${obj}"`);
+  assert.ok(/scrivere/i.test(obj),
+    `objective should preserve the action verb; got "${obj}"`);
+});
+
+test('improvePrompt: English help-me opener nominalized', () => {
+  const r = improvePrompt({
+    originalPrompt: "Help me write a clear summary of this report.",
+  });
+  const objMatch = r.improved.match(/<objective>\s*([\s\S]*?)\s*<\/objective>/);
+  assert.ok(objMatch);
+  const obj = objMatch![1];
+  assert.ok(!/^help me\b/i.test(obj), `objective should not start with "help me"; got "${obj}"`);
+  assert.ok(/write/i.test(obj));
+});
+
 test('improvePrompt: mode is preserved in the result', () => {
   for (const mode of ['final_only', 'compact', 'standard', 'diagnostic'] as const) {
     const r = improvePrompt({ originalPrompt: 'do something useful', outputMode: mode });
