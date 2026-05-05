@@ -117,6 +117,24 @@ In a Claude Code / Skill-aware host, the agent reads `SKILL.md`, may load any of
 
 `agents/openai.yaml` is an opt-in manifest for OpenAI-style agent hosts. It's not required by Claude.
 
+## Slash command
+
+A slash command shipped at `.claude/commands/improve.md` lets compatible hosts invoke the Skill explicitly:
+
+```
+/improve <prompt to improve> [--mode standard|diagnostic|compact|final_only] [--target claude|openai|gemini|local]
+```
+
+To install at user level (so the command is available globally, namespaced as `/aiprompting:improve`):
+
+```bash
+npm run install-command            # installs into every detected host directory
+npm run install-command -- --list  # show targets and supported hosts
+npm run install-command -- --host claude --force
+```
+
+Currently auto-detects: Claude Code (`~/.claude/commands/`), OpenAI Codex CLI (`~/.codex/commands/`), Cursor (`~/.cursor/commands/`). Any other host that reads markdown command files from a known directory can be added in `scripts/install-command.js`.
+
 ## Upgrade path
 
 - Versioning is semver. Track changes in [CHANGELOG.md](CHANGELOG.md).

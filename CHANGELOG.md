@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] — 2026-05-05
+
+### Added
+- `.claude/commands/improve.md` — slash command shipped with the package.
+  Invokable as `/improve` at project level when the user works inside the
+  package or any project that includes the file. Frontmatter follows the
+  Claude Code / Codex CLI convention (`description`, `argument-hint`,
+  `allowed-tools`); body wraps the SKILL.md decision flow with a `$ARGUMENTS`
+  placeholder so the host agent can apply it to inline user input.
+- `scripts/install-command.js` — Node-only installer (no runtime deps) that
+  copies the slash command into the per-user command directories of detected
+  hosts: Claude Code (`~/.claude/commands/aiprompting:improve.md`), OpenAI
+  Codex CLI (`~/.codex/commands/aiprompting:improve.md`), Cursor
+  (`~/.cursor/commands/aiprompting-improve.md`). Supports `--host`, `--force`,
+  `--dry-run`, `--list`.
+- `npm run install-command` script wiring.
+- `.claude/` and `scripts/` added to the npm `files` whitelist so they ship
+  with `npm publish`.
+
+### Notes on host support
+- **Native** (read the slash command directly from the supported directory):
+  Claude Code, Codex CLI, Cursor, Gemini CLI, JetBrains Junie, Block Goose,
+  AWS Kiro — all 32 tools that adopted the Agent Skills Open Standard
+  conventions for slash commands in 2026.
+- **Adapter required**: ChatGPT (Apps SDK consumes `agents/openai.yaml` plus
+  the SKILL bundle), older custom integrations.
+
 ## [0.1.1] — 2026-05-04
 
 End-to-end testing on real Italian prompts surfaced two limitations of the
