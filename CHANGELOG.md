@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] — 2026-05-05
+
+### Added
+- Slash command `/aiprompting:improve` now exposes 4 additional flags that
+  surface backend `PromptImproverOptions` capabilities:
+  - `--language it|en` — force output language; overrides auto-detection.
+  - `--audience "<text>"` — audience descriptor injected into `<context>`;
+    also suppresses the audience clarification question when present.
+  - `--token-budget minimal|balanced|generous` — `minimal` drops
+    `<context>` and `<quality_bar>` and inlines key constraints; `generous`
+    adds 3-5 few-shot examples and expanded `<quality_bar>`.
+  - `--clarify auto|always|never` — override the clarification policy.
+    `never` proceeds even in high-risk domains but emits a single warning
+    line; `always` forces up to 3 questions even on simple prompts.
+- Natural-language fallbacks documented for each flag (e.g. "in italiano",
+  "non chiedere", "minimale", "compatto"). Flags always win over fallbacks.
+- `argument-hint` updated in frontmatter so host menus surface the new flags.
+
+### Notes
+- No code changes: the backend already supported these options via
+  `PromptImproverOptions`. This release exposes them on the slash command
+  surface.
+
 ## [0.1.2] — 2026-05-05
 
 ### Added
