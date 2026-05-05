@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] — 2026-05-05
+
+Documentation overhaul + npm publish readiness. No functional changes to the
+CLI, library, or Skill — purely repository-quality work to make the package
+ready for first publish to the npm registry.
+
+### Added
+
+- `README.md` rewritten end-to-end: shields.io badges (npm, license, Node,
+  types, CI), 30-second quickstart, full CLI flags table, library API example,
+  output modes, 100-point rubric breakdown, agent compatibility matrix,
+  three input → output examples, FAQ section, limitations.
+- `CONTRIBUTING.md` — development setup, project layout, how to add new task
+  types / agent targets / padding patterns / rubric adjustments, release flow.
+- `SECURITY.md` — supported versions, private reporting via email and GitHub
+  Security Advisories, scope and out-of-scope notes.
+- `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1 (official text).
+- `.github/workflows/ci.yml` — matrix CI on Node 18 / 20 / 22 (Ubuntu): build,
+  tests via `node --test`, doctor smoke check.
+- `.github/workflows/release.yml` — tag-triggered (`v*.*.*`) publish to npm
+  with provenance; verifies the tag matches `package.json#version`.
+- `.github/dependabot.yml` — weekly npm and GitHub Actions dependency updates.
+- `.github/ISSUE_TEMPLATE/bug_report.md` and `feature_request.md` — structured
+  templates so issues include reproduction, environment, and `doctor` output.
+- `.github/PULL_REQUEST_TEMPLATE.md` — checklist for tests / doctor /
+  CHANGELOG / references / breaking-change justification.
+- `.editorconfig` — 2-space indent, LF, UTF-8, final newline; markdown keeps
+  trailing whitespace (for line breaks).
+- `package.json` metadata: `homepage`, `repository.url`, `bugs.url`,
+  `publishConfig.access: public`.
+- `prepublishOnly` script: `npm run build && npm test` — publish fails fast if
+  the build or tests are red.
+
+### Notes
+
+- Repository URL is `github.com/matteoscurati/aiprompting`.
+- Node.js engines requirement remains `>=18`.
+- Still zero runtime dependencies. The only devDependencies are `typescript`
+  and `@types/node`.
+
 ## [0.1.3] — 2026-05-05
 
 ### Added

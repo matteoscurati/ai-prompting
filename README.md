@@ -1,160 +1,363 @@
 # aiprompting
 
-Improve, rewrite, debug, evaluate, and compress prompts for any LLM agent.
+> Improve, rewrite, debug, evaluate, and compress prompts for any LLM agent.
 
-`aiprompting` ships in two layers:
+[![npm version](https://img.shields.io/npm/v/aiprompting.svg)](https://www.npmjs.com/package/aiprompting)
+[![license](https://img.shields.io/npm/l/aiprompting.svg)](LICENSE)
+[![node](https://img.shields.io/node/v/aiprompting.svg)](https://nodejs.org)
+[![types](https://img.shields.io/npm/types/aiprompting.svg)](https://www.npmjs.com/package/aiprompting)
+[![CI](https://github.com/matteoscurati/aiprompting/actions/workflows/ci.yml/badge.svg)](https://github.com/matteoscurati/aiprompting/actions/workflows/ci.yml)
 
-- **A Skill (`SKILL.md` + `references/`)** — natural-language instructions an agent (Claude, GPT, Gemini, local) follows to rewrite the user's prompt using its own model.
-- **A Node.js CLI (`npx aiprompting`)** — deterministic, no API keys, no LLM calls. It scores prompts with a 100-point heuristic rubric, applies rule-based scaffolding, and exposes a `doctor` command for installation health.
+`aiprompting` ships in two layers — an Anthropic-style **Skill** that any compatible agent can apply semantically, and a **deterministic Node.js CLI** that runs without API keys, without LLM calls, and without runtime dependencies. The CLI is the verifiable baseline. The Skill is where the real semantic gains happen.
 
-The CLI is the verifiable baseline. The Skill is where the semantic gains happen.
+## 30-second quickstart
+
+```bash
+# Improve any prompt from your shell:
+npx aiprompting improve --prompt "Help me write a sales email"
+
+# Or pipe one in:
+echo "scrivi una mail di vendita" | npx aiprompting improve --mode final_only
+
+# Verify install health:
+npx aiprompting doctor
+```
+
+In a Claude Code session (or any host that supports Skills) the same logic is invokable as a slash command:
+
+```
+/aiprompting:improve scrivi una mail al manager per chiedere un aumento --mode diagnostic
+```
+
+## Table of contents
+
+- [What it does](#what-it-does)
+- [How it works](#how-it-works)
+- [Install](#install)
+- [CLI](#cli)
+- [Slash command](#slash-command)
+- [Library API](#library-api)
+- [Output modes](#output-modes)
+- [The 100-point rubric](#the-100-point-rubric)
+- [Agent compatibility](#agent-compatibility)
+- [Examples (input → output)](#examples-input--output)
+- [Doctor](#doctor)
+- [FAQ](#faq)
+- [Limitations](#limitations)
+- [Contributing](#contributing)
+- [Changelog](#changelog)
+- [License](#license)
+
+## What it does
+
+You give it a vague, padded, or unstructured prompt. It returns a clearer, cheaper, more reliable version — calibrated to the target agent, task type, and output you need.
+
+Concretely, on every prompt it:
+
+1. **Detects** language (it/en) and task type (research, coding, writing, analysis, data-extraction, agentic-workflow, creative, business, education, general).
+2. **Strips** padding that hurts modern reasoning models — `"you are a world-class…"`, `"take a deep breath"`, `"think step by step"`, `"I will tip you…"` plus Italian variants (`"sei un esperto di livello mondiale"`, `"fai un respiro profondo"`, `"pensaci passo passo"`).
+3. **Decides whether to ask** for clarification (only when info is critical, contradictions exist, or the domain is high-risk: legal, medical, financial, security, production code).
+4. **Rewrites** with a canonical XML scaffold (`<role>`, `<objective>`, `<context>`, `<task>`, `<constraints>`, `<output_format>`, `<quality_bar>`).
+5. **Scores** the prompt on a 100-point heuristic rubric (9 categories), before/after, with confidence.
+6. **Surfaces** every assumption it made as `[ASSUMPTION: …]` — so you can correct without rerunning.
+
+## How it works
+
+```
+       ┌─────────────────────────────┐
+       │  USER: "improve my prompt"  │
+       └──────────────┬──────────────┘
+                      ▼
+       ┌─────────────────────────────┐
+       │  classify: lang, task type, │
+       │  target agent (if declared) │
+       └──────────────┬──────────────┘
+                      ▼
+                ╱╲ critical info ╱╲
+               ╱   missing?       ╲
+                ╲ yes ◄──► no    ╱
+                 ▼              ▼
+       ┌──────────────┐  ┌──────────────┐
+       │ ask ≤ 3 Qs   │  │ proceed with │
+       │ (multi-      │  │ [ASSUMPTION] │
+       │  choice)     │  │  markers     │
+       └──────┬───────┘  └──────┬───────┘
+              └─────────┬───────┘
+                        ▼
+       ┌─────────────────────────────┐
+       │  strip padding              │
+       │  scaffold XML               │
+       │  score 0-100                │
+       └──────────────┬──────────────┘
+                      ▼
+       ┌─────────────────────────────┐
+       │  return in chosen mode:     │
+       │  final_only / compact /     │
+       │  standard / diagnostic      │
+       └─────────────────────────────┘
+```
+
+**Two layers.** The Skill (`SKILL.md` + `references/`) is read by a host agent (Claude Code, Codex CLI, Cursor, Gemini CLI, etc.); the agent applies the procedure with its own model. The CLI runs the *same* decisions deterministically, locally, with no LLM call — useful for batch jobs, CI gates, smoke tests, and as a verifiable baseline.
 
 ## Install
 
-Requires Node.js ≥ 18.
-
-From npm (when published):
+Requires **Node.js ≥ 18**. No runtime dependencies.
 
 ```bash
-npx aiprompting doctor
-npx aiprompting improve --prompt "Write me a better sales email"
+# One-off use:
+npx aiprompting <command>
+
+# Project install:
+npm install --save-dev aiprompting
+
+# Global install:
+npm install -g aiprompting
 ```
 
 From source:
 
 ```bash
-git clone <repo>
+git clone https://github.com/matteoscurati/aiprompting.git
 cd aiprompting
 npm install
 npm run build
 node dist/src/cli.js doctor
 ```
 
-## Usage
-
-### CLI
+## CLI
 
 ```bash
 aiprompting improve --prompt "Help me write something good"
-aiprompting improve --file ./prompt.txt
-aiprompting improve --prompt "..." --mode final_only
+aiprompting improve --file ./prompt.txt --mode diagnostic
 aiprompting improve --prompt "..." --target claude --task research --token-budget minimal
-cat prompt.txt | aiprompting improve --mode diagnostic
+cat prompt.txt | aiprompting improve --mode final_only
 aiprompting doctor
 aiprompting --help
 ```
 
-#### Flags
+### Flags
 
-| Flag | Values | Default |
-|---|---|---|
-| `--prompt <text>` | inline prompt | — |
-| `--file <path>` | read from file | — |
-| `--mode <name>` | `final_only` / `compact` / `standard` / `diagnostic` | `standard` |
-| `--target <agent>` | claude / openai / gpt / gemini / local / coding-agent / research-agent / tool-agent | — |
-| `--task <type>` | research / writing / coding / analysis / data-extraction / agentic-workflow / creative / business / education / general | inferred |
-| `--token-budget <level>` | `minimal` / `balanced` / `generous` | `balanced` |
-| `--language <code>` | `it` / `en` | auto-detect |
-| `--audience <text>` | free-text audience description | — |
-| `--constraints <list>` | pipe-separated constraints | — |
-| `--no-score` | suppress score block | — |
-| `--no-rationale` | suppress per-category rationale (diagnostic mode) | — |
-| `--version` | print package version | — |
-| `--help` | print help | — |
+| Flag | Values | Default | Notes |
+|---|---|---|---|
+| `--prompt <text>` | inline string | — | exclusive with `--file`/stdin |
+| `--file <path>` | filesystem path | — | UTF-8 |
+| `--mode <name>` | `final_only` / `compact` / `standard` / `diagnostic` | `standard` | see [Output modes](#output-modes) |
+| `--target <agent>` | claude / openai / gpt / gemini / local / coding-agent / research-agent / tool-agent | — | activates adapter rules from `references/agent-compatibility.md` |
+| `--task <type>` | research / writing / coding / analysis / data-extraction / agentic-workflow / creative / business / education / general | inferred | overrides the keyword classifier |
+| `--token-budget <level>` | `minimal` / `balanced` / `generous` | `balanced` | `minimal` drops `<context>` + `<quality_bar>` |
+| `--language <code>` | `it` / `en` | auto-detect | overrides the marker-based detector |
+| `--audience <text>` | free text | — | injected into `<context>`; suppresses the audience question |
+| `--constraints <list>` | pipe-separated | — | e.g. `--constraints "max 200 words|no markdown"` |
+| `--no-score` | flag | off | suppresses score block |
+| `--no-rationale` | flag | off | suppresses per-category rationale (diagnostic) |
+| `--version` | flag | — | prints package version |
+| `--help` | flag | — | prints CLI help |
 
-### Library API
+## Slash command
+
+A slash command ships at `.claude/commands/improve.md` for hosts that support the Agent Skills Open Standard. Install it system-wide:
+
+```bash
+npm run install-command            # detects supported hosts and copies the file
+npm run install-command -- --list  # show targets
+npm run install-command -- --host claude --force
+```
+
+Auto-detected: **Claude Code** (`~/.claude/commands/`), **OpenAI Codex CLI** (`~/.codex/commands/`), **Cursor** (`~/.cursor/commands/`). Add more in `scripts/install-command.js` (5 lines per host).
+
+Once installed, in a Claude Code session:
+
+```
+/aiprompting:improve <prompt> [--mode …] [--target …] [--task …] [--language …] [--audience "…"] [--token-budget …] [--clarify auto|always|never]
+```
+
+Natural-language fallbacks work too: *"in italiano"*, *"non chiedere"*, *"solo prompt"*, *"compatto"*, *"in dettaglio"*. Flags always win over fallbacks.
+
+## Library API
+
+The package exposes a small, fully-typed library. No runtime deps.
 
 ```ts
-import { improvePrompt, scorePrompt, runDoctor } from 'aiprompting';
+import {
+  improvePrompt,
+  scorePrompt,
+  runDoctor,
+  type PromptImproverOptions,
+  type ImprovementResult,
+} from 'aiprompting';
 
-const result = improvePrompt({
+const result: ImprovementResult = improvePrompt({
   originalPrompt: 'Help me write a better sales email',
   taskType: 'writing',
   outputMode: 'standard',
   language: 'it',
+  audience: 'CTOs di scale-up B2B',
+  tokenBudget: 'minimal',
+  askClarifyingQuestions: 'never',
 });
 
-console.log(result.improved);          // the rewritten prompt
-console.log(result.scores);             // before/after/delta
-console.log(result.assumptions);        // explicit assumptions
-console.log(result.clarifications);     // up to 3 questions if needed
+console.log(result.improved);          // string: the rewritten prompt
+console.log(result.scores);            // { before, after, delta, confidence }
+console.log(result.assumptions);       // string[]: explicit assumptions
+console.log(result.clarifications);    // ClarificationQuestion[]
+console.log(result.changes);           // ImprovementChange[]: what was modified
 ```
+
+Full options surface: `PromptImproverOptions` in `dist/src/types.d.ts`.
 
 ## Output modes
 
-| Mode | What you get |
-|---|---|
-| `final_only` | Only the improved prompt block (lowest token cost). |
-| `compact` | Improved prompt + 1-line score. |
-| `standard` *(default)* | Improved prompt + change list + score + assumptions. |
-| `diagnostic` | Standard + per-category rubric breakdown. |
+| Mode | What you get | Use when |
+|---|---|---|
+| `final_only` | Improved prompt block only | You'll paste it elsewhere; lowest token cost |
+| `compact` | Improved prompt + 1-line score | You want quick before/after delta |
+| `standard` *(default)* | Improved prompt + change list + score + assumptions | Day-to-day work |
+| `diagnostic` | Standard + per-category rubric breakdown | Debugging why a prompt scored low |
 
-## How the rubric works
+## The 100-point rubric
 
-100 points across 9 categories. See [references/prompt-quality-rubric.md](references/prompt-quality-rubric.md) for the full breakdown. Scores are heuristic estimates, not guaranteed performance gains.
+| Category | Weight | What it measures |
+|---|---|---|
+| Intent clarity | 15 | Vague openers penalized; explicit objective rewarded |
+| Context sufficiency | 15 | Load-bearing facts present; productive length band |
+| Task decomposition | 10 | Numbered/bulleted steps when order matters |
+| Constraint specificity | 10 | Verifiable rules: lengths, formats, exclusions |
+| Output format clarity | 15 | Schema declared; example present; structured tags |
+| Tool / source instructions | 10 | When to use, when not to, error handling, citations |
+| Robustness vs hallucination | 10 | "Do not invent", "if unknown say so", uncertainty |
+| Token efficiency | 10 | No padding; no repeated trigrams |
+| Evaluation criteria | 5 | `<success_criteria>` or equivalent |
+
+Total = **100**. Scores are heuristic estimates, not guaranteed performance gains. Full breakdown in [`references/prompt-quality-rubric.md`](references/prompt-quality-rubric.md).
+
+## Agent compatibility
+
+The package follows the **Agent Skills Open Standard** (Anthropic, December 2025). As of 2026, ~32 host tools read `SKILL.md` from the conventional directory.
+
+| Host | Reads `SKILL.md` natively | Slash command directory |
+|---|---|---|
+| Claude Code | ✓ | `~/.claude/commands/` |
+| OpenAI Codex CLI | ✓ | `~/.codex/commands/` |
+| ChatGPT (Apps SDK) | ✓ via Apps SDK | uses `agents/openai.yaml` |
+| Cursor | ✓ | `~/.cursor/commands/` |
+| Gemini CLI | ✓ | `~/.gemini/commands/` (add to installer) |
+| JetBrains Junie | ✓ | proprietary mechanism |
+| Block Goose | ✓ | `.goose/commands/` |
+| AWS Kiro | ✓ | proprietary manifest |
+| Older custom integrations | adapter required | call `improvePrompt()` as a tool |
+
+Adapter notes per target are in [`references/agent-compatibility.md`](references/agent-compatibility.md).
+
+## Examples (input → output)
+
+### A vague prompt with English padding
+
+**Input:**
+```
+You are a world-class expert. Take a deep breath. Help me write something good.
+```
+
+**Output (`standard` mode, English):**
+```
+## Improved prompt
+<role>Expert generalist assistant — precise and direct.</role>
+<objective>Write something good.</objective>
+<context>[ASSUMPTION: no additional context provided; the model should flag any load-bearing assumptions]</context>
+<task>Help me write something good.</task>
+<constraints>
+- Explicitly distinguish facts, inferences, and assumptions.
+- If critical information is missing, declare it rather than inventing.
+</constraints>
+<output_format>Structured, direct answer; length calibrated to task complexity.</output_format>
+<quality_bar>...</quality_bar>
+
+Original: 30/100  →  Improved: 79/100  (Δ +49, confidence: high)
+```
+
+### An Italian prompt with persona padding
+
+**Input:**
+```
+Sei un esperto di livello mondiale. Aiutami a scrivere una mail per chiedere un aumento.
+```
+
+**Output (`standard` mode, Italian — note the auto-detect):**
+- Stripped Italian padding (`Sei un esperto di livello mondiale`)
+- Nominalized opener (`Aiutami a scrivere…` → objective: `Scrivere una mail…`)
+- Task type → `writing`, role → `Senior editor con focus su chiarezza, ritmo e adeguatezza al pubblico.`
+- Score 32 → 84 (Δ +52, confidence: high)
+
+### A high-risk prompt — triggers clarification
+
+**Input:**
+```
+Estrai i dati dei pazienti da questo CSV e crea un report di compliance GDPR.
+```
+
+The CLI detects `paziente` + `gdpr` + `compliance` (high-risk keyword set), surfaces:
+```
+## Domande di chiarimento
+- Per quale audience? (es. tecnici, clienti finali)
+- Formato di output preferito? (markdown / json / plain text / table / xml)
+```
+…and proceeds with `[CLARIFY] High-risk domain detected — confirmation needed.` in the assumptions.
+
+More examples in [`examples/`](examples/).
 
 ## Doctor
 
 ```
-$ aiprompting doctor
+$ npx aiprompting doctor
 AIPrompting Doctor
 ✓ Node.js >= 18 (node v20.10.0)
-✓ package.json valid + bin entry (version 0.1.0)
+✓ package.json valid + bin entry (version 0.1.4)
 ✓ SKILL.md frontmatter (name, description) (name ✓, description ✓)
 ✓ references/ files (5/5)
-✓ bin/aiprompting executable (/.../bin/aiprompting)
-✓ compiled CLI artifact (dist) (/.../dist/src/cli.js)
+✓ bin/aiprompting executable
+✓ compiled CLI artifact (dist)
 ✓ smoke test (improvePrompt) (improved length=842, delta=43)
 Status: OK
-Node: 20.10.0 | Package: 0.1.0
+Node: 20.10.0 | Package: 0.1.4
 ```
 
 If a check fails, the doctor prints a `fix:` line for it.
 
-## How the Skill is consumed by an agent
+## FAQ
 
-In a Claude Code / Skill-aware host, the agent reads `SKILL.md`, may load any of the `references/*.md` if it needs depth, and applies the procedure to the user's prompt. The CLI is not invoked by the agent — it's a developer / CI utility.
+**Why ship both a Skill and a CLI?** They serve different consumers. The Skill is consumed by an agent that has its own LLM — that agent gets semantic rewriting. The CLI runs locally, deterministic, no API key — useful in CI, batch jobs, smoke tests, and as a fallback when no agent is available.
 
-`agents/openai.yaml` is an opt-in manifest for OpenAI-style agent hosts. It's not required by Claude.
+**Does the CLI call an LLM?** No. Never. The CLI is rule-based: keyword detection, regex padding strippers, XML scaffolding, heuristic scoring. Zero API calls.
 
-## Slash command
+**Will the score improve my real prompt performance?** The score is a heuristic estimate of *prompt structural quality*, not a measured behavioral outcome. Reliable measurement requires a golden test set on real models. The score correlates with quality in our own evals; it is not a guarantee.
 
-A slash command shipped at `.claude/commands/improve.md` lets compatible hosts invoke the Skill explicitly:
+**Why not use a hosted prompt-improvement service?** Privacy, cost, reproducibility, and offline use. The deterministic CLI is the same on every machine. The Skill, when run by a host agent, never leaves the user's existing tool.
 
-```
-/improve <prompt to improve> [--mode standard|diagnostic|compact|final_only] [--target claude|openai|gemini|local]
-```
+**The CLI rewrites my Italian prompt with English structure tags.** The XML tags (`<role>`, `<task>`, etc.) are the protocol for the model — they are intentionally English because that's the convention every modern LLM is trained on. The *content* of the prompt is in your language. If you want fully Italian tags, fork and translate; the rest of the logic doesn't depend on the tag names.
 
-To install at user level (so the command is available globally, namespaced as `/aiprompting:improve`):
+**Can I add a new task type / target agent?** Yes — see [CONTRIBUTING.md](CONTRIBUTING.md). It's two file edits and a regression test.
 
-```bash
-npm run install-command            # installs into every detected host directory
-npm run install-command -- --list  # show targets and supported hosts
-npm run install-command -- --host claude --force
-```
+**What happens to "think step by step"?** It's stripped. Modern reasoning models (Claude 4.x, GPT-5.x, Gemini 2.5+) reason adaptively; explicit CoT instructions are redundant or counterproductive. If you target a small/local model that does not reason internally, the adapter for `--target local` does not strip it.
 
-Currently auto-detects: Claude Code (`~/.claude/commands/`), OpenAI Codex CLI (`~/.codex/commands/`), Cursor (`~/.cursor/commands/`). Any other host that reads markdown command files from a known directory can be added in `scripts/install-command.js`.
-
-## Upgrade path
-
-- Versioning is semver. Track changes in [CHANGELOG.md](CHANGELOG.md).
-- Adding a new task type → update `TASK_TYPE_HINTS`, `ROLE_BY_TASK`, `OUTPUT_FORMAT_BY_TASK` in `src/prompt-improver.ts`, plus a section in `references/prompt-patterns.md`.
-- Adding a new agent target → extend `references/agent-compatibility.md` and document any heuristic in `src/prompt-improver.ts` (keep model-specific advice in references, not in core logic).
-- Adjusting the rubric → update `src/evaluator.ts` *and* `references/prompt-quality-rubric.md` together.
+**Where do I report issues?** [GitHub Issues](https://github.com/matteoscurati/aiprompting/issues). Security: see [SECURITY.md](SECURITY.md).
 
 ## Limitations
 
-- The CLI's improvement is **deterministic and rule-based**. It guarantees structural scaffolding and padding removal; it does not perform semantic rewriting (a host agent does that).
-- Scores are heuristic estimates. Reliable measurement requires a golden test set on real models.
-- Italian language detection uses a small marker set; pass `--language en|it` for certainty.
-- The Skill description is dense to maximize triggering precision; tune for your host if needed.
+- **CLI = deterministic baseline.** It guarantees structural scaffolding and padding removal; it does not perform semantic rewriting. The richer rewrite happens when an agent host applies the Skill.
+- **Scores are heuristic.** Useful for relative comparison (before vs after, variant A vs B); not a direct performance metric.
+- **Italian language detection** uses a small marker set (verbs + articles + common nouns); pass `--language en|it` for certainty.
+- **Padding patterns** are explicit regexes; novel padding phrases may slip through. Open an issue with the example.
+- **The Skill description** is dense to maximize triggering precision; tune for your host if needed.
 
-## Troubleshooting
+## Contributing
 
-- **`bin/aiprompting`: build artifact not found** — run `npm run build` inside the package.
-- **`tsc: command not found`** — run `npm install` first to install the TypeScript devDependency.
-- **`npm test` fails after a manual edit** — the test runner expects compiled output; tests are TS that compile to `dist/tests/*.test.js` and run there.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, how to add task types / agent targets / scoring categories, and the release flow.
+
+By participating, you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md). The project follows [Semantic Versioning](https://semver.org) and [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). © 2026 Matteo Scurati.
