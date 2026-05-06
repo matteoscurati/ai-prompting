@@ -28,7 +28,30 @@ Do not ask when:
 - Briefly explain *why* a question matters only if non-obvious.
 - Do **not** echo the user's prompt back at them; show you've read it.
 
-### Format
+## Rendering
+
+Markdown MCQ is the universal fallback. **When the host provides a
+structured-question primitive — one that renders as clickable options and
+constrains the reply to the offered values — prefer it.** Detection rule
+for the agent: if a tool whose purpose is "ask the user a question with
+choices" is available, call it; otherwise emit the markdown block below.
+
+| Host | Primitive | Notes |
+|---|---|---|
+| Claude Code | `AskUserQuestion` tool | Renders as inline chips; reply is structured; supports up to 4 questions per call. |
+| Cursor | inline choice widget | Similar UX; structured reply. |
+| OpenAI Codex CLI | none (as of 2026) | Falls back to the markdown format. |
+| Gemini CLI | none (as of 2026) | Falls back to the markdown format. |
+| Plain chat / agnostic | none | Markdown only. |
+
+Why prefer it: lower friction for the user (one click vs typing "1B"),
+structured replies (no parsing free-text answers), and unambiguous
+coverage (every option visible at the same time). The same preference
+applies to the [refinement loop](#refinement-loop) (Choice 2 in step 9
+of `SKILL.md`): batch the per-cycle assumptions into one structured
+question call.
+
+### Format (markdown fallback)
 
 ```
 ## Domande di chiarimento

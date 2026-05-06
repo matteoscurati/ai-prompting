@@ -33,6 +33,7 @@ Apply the **aiprompting** prompt-improvement procedure to the prompt the user su
    - `--clarify always` → ask up to 3 focused questions even on simple prompts (still cap at 3, still prefer multiple-choice).
    - `--clarify auto` (default) → ask only if **at least one** is true: outcome not inferable; required dependency missing (audience, source files, schema, target platform, jurisdiction); high-risk domain (legal, medical, financial, security, production, regulated); contradictory instructions; underspecified style/format the user explicitly cares about. Otherwise proceed with explicit assumptions.
    If `--audience` is provided, do not ask the audience question — it's already specified.
+   **Rendering preference**: when asking, use the host's structured-choice primitive (e.g. `AskUserQuestion` in Claude Code) instead of markdown MCQ. Markdown is the fallback for hosts without one (Codex CLI, Gemini CLI as of 2026).
 6. **Strip padding**: remove "you are a world-class…", "take a deep breath", "I will tip you…", "think step by step" (counterproductive on modern reasoning models), and Italian variants ("sei un esperto di livello mondiale", "fai un respiro profondo", "pensaci passo passo", "ti darò una mancia").
 7. **Rewrite** using the canonical XML scaffold (use plain markdown when simpler is enough):
    ```

@@ -66,6 +66,7 @@ Adapter notes per target. Apply only when the user names a target; otherwise def
 - **Keep entrypoint compact.** Push depth into `references/` to keep the host's context window cheap.
 - **Compose well.** Don't duplicate other Skills' responsibilities; reference them.
 - **Multi-turn slash commands.** Step 9 of the Skill (offer execution) assumes the host can carry conversational state across turns inside a slash command. Most hosts can — Claude Code, Codex CLI, Cursor, Gemini CLI all do. On hosts without multi-turn state (rare; some embedded chat widgets, certain Codex CLI configs in non-interactive mode), the choice block degrades: Choice 1 (Run) falls back to "copy this block" with the improved prompt body fenced for clipboard copy, and Choice 2 (Refine) is unavailable since the refinement loop requires multi-turn — only Run / Exit remain.
+- **Interactive question primitives.** When asking clarifications (step 5) or driving the refinement loop (step 9 Choice 2), prefer the host's structured-choice tool over plain markdown MCQ. Claude Code exposes `AskUserQuestion` (chips, structured reply, up to 4 questions per call); Cursor has an equivalent widget. Codex CLI and Gemini CLI as of 2026 do not have one — fall back to the markdown clarification block. The user-facing benefit is one-click replies; the agent-facing benefit is structured answers (no free-text parsing). Full rules: [rendering](clarification-policy.md#rendering).
 
 ## Cross-vendor neutral scaffold (default when no target specified)
 

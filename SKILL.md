@@ -25,7 +25,7 @@ Do **not** invoke this Skill when the user simply wants you to *answer* a questi
 3. **Detect** target agent or model if mentioned (Claude / GPT / Gemini / local / coding-agent / research-agent / tool-agent).
 4. **Identify missing information** that would *materially* change the result.
 5. **Decide on clarification:**
-   - Critical missing info → ask up to 3 focused questions (see [clarification-policy](references/clarification-policy.md)).
+   - Critical missing info → ask up to 3 focused questions (see [clarification-policy](references/clarification-policy.md)). When the host has a structured-choice primitive (e.g. `AskUserQuestion` in Claude Code), prefer it over markdown MCQ — see [rendering rules](references/clarification-policy.md#rendering).
    - Otherwise → proceed and surface explicit `[ASSUMPTION: ...]` markers.
 6. **Rewrite** using the smallest effective structure (see [prompt-patterns](references/prompt-patterns.md)).
 7. **Score** original vs improved against the rubric (see [prompt-quality-rubric](references/prompt-quality-rubric.md)).

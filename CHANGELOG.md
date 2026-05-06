@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] — 2026-05-06
+
+### Added
+
+- **Rendering preference for clarifications and the refinement loop.** When
+  the host provides a structured-choice primitive — Claude Code's
+  `AskUserQuestion`, Cursor's inline widget, or any equivalent — the Skill
+  now prefers it over plain markdown MCQ. Benefits: one-click replies,
+  structured answers (no free-text parsing), unambiguous coverage of
+  options.
+- New "Rendering" section in `references/clarification-policy.md` with a
+  per-host primitive table and the detection rule the agent uses to pick
+  the right format.
+- Cross-reference in `SKILL.md` step 5 and `.claude/commands/improve.md`
+  step 5 pointing to the new section.
+- Cross-reference in `references/agent-compatibility.md` "Skill-based
+  hosts" with per-host primitive availability.
+- Test (`tests/skill-md.test.ts`) — verifies the new `## Rendering`
+  anchor exists in `clarification-policy.md` so the SKILL.md links don't
+  rot.
+
+### Notes
+
+- Markdown MCQ remains the universal fallback for hosts without a
+  structured primitive (Codex CLI, Gemini CLI as of 2026, plain chat).
+- Pure-Markdown contract: zero TypeScript code changes. `evaluator.ts`,
+  `prompt-improver.ts`, `cli.ts`, and the deterministic CLI output are
+  byte-identical to 0.1.5.
+- The preference applies both to standard step-5 clarifications and to
+  the step-9 Choice-2 refinement loop introduced in 0.1.5.
+
 ## [0.1.5] — 2026-05-06
 
 ### Added

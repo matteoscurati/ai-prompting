@@ -40,9 +40,10 @@ test('Slash command: choice markers present (it + en)', () => {
   }
 });
 
-test('clarification-policy.md: refinement-loop section anchored', () => {
+test('clarification-policy.md: refinement-loop and rendering sections anchored', () => {
   const policyPath = join(packageRoot, 'references', 'clarification-policy.md');
   const policy = readFileSync(policyPath, 'utf8');
-  // The Skill links to #refinement-loop; ensure the heading exists.
+  // SKILL.md and improve.md both link to these anchors; ensure they exist.
   assert.match(policy, /^## Refinement loop$/m);
+  assert.match(policy, /^## Rendering$/m);
 });
