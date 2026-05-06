@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-05-06
+
+### Changed (BREAKING)
+
+- **Package renamed: `aiprompting` → `ai-prompting`.** The previous name is
+  deprecated on npm. Existing 0.1.x users should migrate:
+  ```bash
+  npm uninstall aiprompting
+  npm install ai-prompting
+  ```
+- **Binary renamed**: `aiprompting` → `ai-prompting`. Update scripts:
+  ```bash
+  # before
+  npx aiprompting improve --prompt "..."
+  # after
+  npx ai-prompting improve --prompt "..."
+  ```
+- **Skill name renamed**: SKILL.md `name: aiprompting` → `name: ai-prompting`.
+  Hosts that loaded the old Skill must reinstall.
+- **Slash command renamed**: `/aiprompting:improve` → `/ai-prompting:improve`.
+  The shipped slash command file in `.claude/commands/improve.md` and the
+  cross-host installer (`scripts/install-command.js`) now write to
+  `~/.claude/commands/ai-prompting:improve.md` (and equivalents). Run:
+  ```bash
+  npm run install-command -- --force
+  ```
+  to overwrite the previous file. The old `aiprompting:improve.md` files
+  must be deleted manually.
+- **Docs site renamed**: `aiprompting.sh` → `ai-prompting.sh`. The new
+  domain is canonical going forward.
+- **Repository moved**: `github.com/matteoscurati/aiprompting` →
+  `github.com/matteoscurati/ai-prompting` (GitHub redirects from the old URL).
+
+### Why
+
+The old name was easily confused as one word; the hyphenated form reads
+better in lists, package managers, and search results. Acquired the
+matching `.sh` domain and switched in one shot to avoid drift between
+package, repo, Skill, and site.
+
+### Migration notes
+
+- No functional changes. The TypeScript core, rubric, padding patterns,
+  Skill behavior, and CLI flags are byte-identical to 0.1.6.
+- The provenance attestation that was missing from the manual 0.1.6
+  publish is back: 0.2.0 publishes via the GitHub Actions release
+  workflow with `id-token: write` — npm shows the "✓ Provenance" badge.
+
 ## [0.1.6] — 2026-05-06
 
 ### Added
@@ -109,7 +157,7 @@ ready for first publish to the npm registry.
 
 ### Notes
 
-- Repository URL is `github.com/matteoscurati/aiprompting`.
+- Repository URL is `github.com/matteoscurati/ai-prompting`.
 - Node.js engines requirement remains `>=18`.
 - Still zero runtime dependencies. The only devDependencies are `typescript`
   and `@types/node`.
@@ -117,7 +165,7 @@ ready for first publish to the npm registry.
 ## [0.1.3] — 2026-05-05
 
 ### Added
-- Slash command `/aiprompting:improve` now exposes 4 additional flags that
+- Slash command `/ai-prompting:improve` now exposes 4 additional flags that
   surface backend `PromptImproverOptions` capabilities:
   - `--language it|en` — force output language; overrides auto-detection.
   - `--audience "<text>"` — audience descriptor injected into `<context>`;
@@ -148,9 +196,9 @@ ready for first publish to the npm registry.
   placeholder so the host agent can apply it to inline user input.
 - `scripts/install-command.js` — Node-only installer (no runtime deps) that
   copies the slash command into the per-user command directories of detected
-  hosts: Claude Code (`~/.claude/commands/aiprompting:improve.md`), OpenAI
-  Codex CLI (`~/.codex/commands/aiprompting:improve.md`), Cursor
-  (`~/.cursor/commands/aiprompting-improve.md`). Supports `--host`, `--force`,
+  hosts: Claude Code (`~/.claude/commands/ai-prompting:improve.md`), OpenAI
+  Codex CLI (`~/.codex/commands/ai-prompting:improve.md`), Cursor
+  (`~/.cursor/commands/ai-prompting-improve.md`). Supports `--host`, `--force`,
   `--dry-run`, `--list`.
 - `npm run install-command` script wiring.
 - `.claude/` and `scripts/` added to the npm `files` whitelist so they ship
@@ -210,7 +258,7 @@ Initial release.
     `--no-score`, `--no-rationale`, `--version`, `--help`; reads stdin when no
     `--prompt`/`--file` is provided.
   - `index.ts` — public library API.
-- `bin/aiprompting` shebang shim with a clear error when `dist/` is missing.
+- `bin/ai-prompting` shebang shim with a clear error when `dist/` is missing.
 - `agents/openai.yaml` — opt-in manifest for OpenAI-style hosts.
 - 4 example prompts under `examples/`.
 - Tests with `node --test` for evaluator, prompt-improver, doctor.

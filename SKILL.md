@@ -1,9 +1,9 @@
 ---
-name: aiprompting
+name: ai-prompting
 description: improve, rewrite, debug, evaluate, or compress prompts for llm agents and skill-based workflows. use when the user asks to make a prompt better, perfect, more reliable, cheaper, clearer, structured, model-specific, agent-ready, or suitable for tools, research, coding, writing, extraction, or multi-step workflows.
 ---
 
-# aiprompting
+# ai-prompting
 
 A prompt-improvement Skill. Take any user-supplied prompt and return a clearer, cheaper, more reliable version — calibrated to the target agent, task type, and output needs.
 
@@ -149,9 +149,9 @@ Full table: [agent-compatibility](references/agent-compatibility.md).
 This Skill ships with a Node.js CLI for deterministic baseline scaffolding without an LLM call:
 
 ```
-npx aiprompting doctor
-npx aiprompting improve --prompt "Write me a better sales email"
-npx aiprompting improve --file prompt.txt --mode diagnostic
+npx ai-prompting doctor
+npx ai-prompting improve --prompt "Write me a better sales email"
+npx ai-prompting improve --file prompt.txt --mode diagnostic
 ```
 
 The CLI is useful for: smoke-testing the package, batch-processing prompts in CI, getting a deterministic baseline you can then refine semantically. The richer rewrite happens *inside the host agent* using the instructions on this page.

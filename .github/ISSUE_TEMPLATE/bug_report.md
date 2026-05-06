@@ -15,10 +15,10 @@ Minimal command line, library call, or slash-command invocation that triggers th
 
 ```bash
 # CLI:
-aiprompting improve --prompt "..."
+ai-prompting improve --prompt "..."
 
 # or library:
-import { improvePrompt } from 'aiprompting';
+import { improvePrompt } from 'ai-prompting';
 improvePrompt({ originalPrompt: '...', /* ... */ });
 ```
 
@@ -44,15 +44,15 @@ What you expected to happen, and why.
 
 ## Environment
 
-- `aiprompting` version: <e.g. 0.1.4>
+- `ai-prompting` version: <e.g. 0.1.4>
 - Node version: <output of `node --version`>
 - OS: <macOS / Linux / Windows + version>
 - Host (if Skill / slash command): <Claude Code / Codex CLI / Cursor / ...>
 
-## `aiprompting doctor` output
+## `ai-prompting doctor` output
 
 ```
-<paste full output of `npx aiprompting doctor`>
+<paste full output of `npx ai-prompting doctor`>
 ```
 
 ## Additional context

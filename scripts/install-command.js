@@ -9,17 +9,17 @@ const HOSTS = [
   {
     label: 'Claude Code',
     dir: path.join(os.homedir(), '.claude', 'commands'),
-    filename: 'aiprompting:improve.md',
+    filename: 'ai-prompting:improve.md',
   },
   {
     label: 'OpenAI Codex CLI',
     dir: path.join(os.homedir(), '.codex', 'commands'),
-    filename: 'aiprompting:improve.md',
+    filename: 'ai-prompting:improve.md',
   },
   {
     label: 'Cursor',
     dir: path.join(os.homedir(), '.cursor', 'commands'),
-    filename: 'aiprompting-improve.md',
+    filename: 'ai-prompting-improve.md',
   },
 ];
 
@@ -45,7 +45,7 @@ function parseArgs(argv) {
 
 function printUsage() {
   process.stdout.write(
-    'aiprompting install-command\n\n' +
+    'ai-prompting install-command\n\n' +
     'USAGE\n' +
     '  node scripts/install-command.js [options]\n\n' +
     'OPTIONS\n' +

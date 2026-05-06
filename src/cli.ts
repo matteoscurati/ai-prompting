@@ -56,13 +56,13 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function printUsage(): void {
-  const usage = `aiprompting — improve any prompt into a clearer, cheaper, more reliable version.
+  const usage = `ai-prompting — improve any prompt into a clearer, cheaper, more reliable version.
 
 USAGE
-  aiprompting doctor
-  aiprompting improve --prompt "<text>" [options]
-  aiprompting improve --file <path>     [options]
-  cat prompt.txt | aiprompting improve   [options]
+  ai-prompting doctor
+  ai-prompting improve --prompt "<text>" [options]
+  ai-prompting improve --file <path>     [options]
+  cat prompt.txt | ai-prompting improve   [options]
 
 OPTIONS
   --prompt <text>           Inline prompt to improve.
@@ -267,7 +267,7 @@ function main(argv: string[]): number {
   if (parsed.command === 'improve') {
     const original = pickPrompt(parsed.flags);
     if (!original.trim()) {
-      process.stderr.write('aiprompting: no prompt provided. Use --prompt, --file, or pipe via stdin.\n\n');
+      process.stderr.write('ai-prompting: no prompt provided. Use --prompt, --file, or pipe via stdin.\n\n');
       printUsage();
       return 1;
     }
@@ -279,7 +279,7 @@ function main(argv: string[]): number {
     return 0;
   }
 
-  process.stderr.write(`aiprompting: unknown command "${parsed.command}".\n\n`);
+  process.stderr.write(`ai-prompting: unknown command "${parsed.command}".\n\n`);
   printUsage();
   return 1;
 }

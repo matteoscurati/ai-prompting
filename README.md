@@ -1,32 +1,32 @@
-# aiprompting
+# ai-prompting
 
 > Improve, rewrite, debug, evaluate, and compress prompts for any LLM agent.
 
-[![npm version](https://img.shields.io/npm/v/aiprompting.svg)](https://www.npmjs.com/package/aiprompting)
-[![license](https://img.shields.io/npm/l/aiprompting.svg)](LICENSE)
-[![node](https://img.shields.io/node/v/aiprompting.svg)](https://nodejs.org)
-[![types](https://img.shields.io/npm/types/aiprompting.svg)](https://www.npmjs.com/package/aiprompting)
-[![CI](https://github.com/matteoscurati/aiprompting/actions/workflows/ci.yml/badge.svg)](https://github.com/matteoscurati/aiprompting/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/ai-prompting.svg)](https://www.npmjs.com/package/ai-prompting)
+[![license](https://img.shields.io/npm/l/ai-prompting.svg)](LICENSE)
+[![node](https://img.shields.io/node/v/ai-prompting.svg)](https://nodejs.org)
+[![types](https://img.shields.io/npm/types/ai-prompting.svg)](https://www.npmjs.com/package/ai-prompting)
+[![CI](https://github.com/matteoscurati/ai-prompting/actions/workflows/ci.yml/badge.svg)](https://github.com/matteoscurati/ai-prompting/actions/workflows/ci.yml)
 
-`aiprompting` ships in two layers — an Anthropic-style **Skill** that any compatible agent can apply semantically, and a **deterministic Node.js CLI** that runs without API keys, without LLM calls, and without runtime dependencies. The CLI is the verifiable baseline. The Skill is where the real semantic gains happen.
+`ai-prompting` ships in two layers — an Anthropic-style **Skill** that any compatible agent can apply semantically, and a **deterministic Node.js CLI** that runs without API keys, without LLM calls, and without runtime dependencies. The CLI is the verifiable baseline. The Skill is where the real semantic gains happen.
 
 ## 30-second quickstart
 
 ```bash
 # Improve any prompt from your shell:
-npx aiprompting improve --prompt "Help me write a sales email"
+npx ai-prompting improve --prompt "Help me write a sales email"
 
 # Or pipe one in:
-echo "scrivi una mail di vendita" | npx aiprompting improve --mode final_only
+echo "scrivi una mail di vendita" | npx ai-prompting improve --mode final_only
 
 # Verify install health:
-npx aiprompting doctor
+npx ai-prompting doctor
 ```
 
 In a Claude Code session (or any host that supports Skills) the same logic is invokable as a slash command:
 
 ```
-/aiprompting:improve scrivi una mail al manager per chiedere un aumento --mode diagnostic
+/ai-prompting:improve scrivi una mail al manager per chiedere un aumento --mode diagnostic
 ```
 
 ## Table of contents
@@ -105,20 +105,20 @@ Requires **Node.js ≥ 18**. No runtime dependencies.
 
 ```bash
 # One-off use:
-npx aiprompting <command>
+npx ai-prompting <command>
 
 # Project install:
-npm install --save-dev aiprompting
+npm install --save-dev ai-prompting
 
 # Global install:
-npm install -g aiprompting
+npm install -g ai-prompting
 ```
 
 From source:
 
 ```bash
-git clone https://github.com/matteoscurati/aiprompting.git
-cd aiprompting
+git clone https://github.com/matteoscurati/ai-prompting.git
+cd ai-prompting
 npm install
 npm run build
 node dist/src/cli.js doctor
@@ -127,12 +127,12 @@ node dist/src/cli.js doctor
 ## CLI
 
 ```bash
-aiprompting improve --prompt "Help me write something good"
-aiprompting improve --file ./prompt.txt --mode diagnostic
-aiprompting improve --prompt "..." --target claude --task research --token-budget minimal
-cat prompt.txt | aiprompting improve --mode final_only
-aiprompting doctor
-aiprompting --help
+ai-prompting improve --prompt "Help me write something good"
+ai-prompting improve --file ./prompt.txt --mode diagnostic
+ai-prompting improve --prompt "..." --target claude --task research --token-budget minimal
+cat prompt.txt | ai-prompting improve --mode final_only
+ai-prompting doctor
+ai-prompting --help
 ```
 
 ### Flags
@@ -168,7 +168,7 @@ Auto-detected: **Claude Code** (`~/.claude/commands/`), **OpenAI Codex CLI** (`~
 Once installed, in a Claude Code session:
 
 ```
-/aiprompting:improve <prompt> [--mode …] [--target …] [--task …] [--language …] [--audience "…"] [--token-budget …] [--clarify auto|always|never]
+/ai-prompting:improve <prompt> [--mode …] [--target …] [--task …] [--language …] [--audience "…"] [--token-budget …] [--clarify auto|always|never]
 ```
 
 Natural-language fallbacks work too: *"in italiano"*, *"non chiedere"*, *"solo prompt"*, *"compatto"*, *"in dettaglio"*. Flags always win over fallbacks.
@@ -184,7 +184,7 @@ import {
   runDoctor,
   type PromptImproverOptions,
   type ImprovementResult,
-} from 'aiprompting';
+} from 'ai-prompting';
 
 const result: ImprovementResult = improvePrompt({
   originalPrompt: 'Help me write a better sales email',
@@ -307,13 +307,13 @@ More examples in [`examples/`](examples/).
 ## Doctor
 
 ```
-$ npx aiprompting doctor
+$ npx ai-prompting doctor
 AIPrompting Doctor
 ✓ Node.js >= 18 (node v20.10.0)
 ✓ package.json valid + bin entry (version 0.1.6)
 ✓ SKILL.md frontmatter (name, description) (name ✓, description ✓)
 ✓ references/ files (5/5)
-✓ bin/aiprompting executable
+✓ bin/ai-prompting executable
 ✓ compiled CLI artifact (dist)
 ✓ smoke test (improvePrompt) (improved length=842, delta=43)
 Status: OK
@@ -338,7 +338,7 @@ If a check fails, the doctor prints a `fix:` line for it.
 
 **What happens to "think step by step"?** It's stripped. Modern reasoning models (Claude 4.x, GPT-5.x, Gemini 2.5+) reason adaptively; explicit CoT instructions are redundant or counterproductive. If you target a small/local model that does not reason internally, the adapter for `--target local` does not strip it.
 
-**Where do I report issues?** [GitHub Issues](https://github.com/matteoscurati/aiprompting/issues). Security: see [SECURITY.md](SECURITY.md).
+**Where do I report issues?** [GitHub Issues](https://github.com/matteoscurati/ai-prompting/issues). Security: see [SECURITY.md](SECURITY.md).
 
 ## Limitations
 

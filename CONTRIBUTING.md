@@ -1,4 +1,4 @@
-# Contributing to aiprompting
+# Contributing to ai-prompting
 
 Thanks for considering a contribution. This project is small, opinionated, and easy to extend. The two principles to keep in mind:
 
@@ -8,8 +8,8 @@ Thanks for considering a contribution. This project is small, opinionated, and e
 ## Dev setup
 
 ```bash
-git clone https://github.com/matteoscurati/aiprompting.git
-cd aiprompting
+git clone https://github.com/matteoscurati/ai-prompting.git
+cd ai-prompting
 npm install
 npm run build
 npm test
@@ -21,7 +21,7 @@ Requires Node.js ≥ 18. The only devDeps are `typescript` and `@types/node`.
 ## Project layout
 
 ```
-aiprompting/
+ai-prompting/
 ├── SKILL.md                       # Skill entrypoint (Anthropic format)
 ├── .claude/commands/improve.md    # Slash command (Agent Skills standard)
 ├── src/
@@ -66,7 +66,7 @@ aiprompting/
    {
      label: 'New Host',
      dir: path.join(os.homedir(), '.newhost', 'commands'),
-     filename: 'aiprompting:improve.md',
+     filename: 'ai-prompting:improve.md',
    }
    ```
 4. Verify with `npm run install-command -- --list` and `npm run install-command -- --dry-run --host newhost`.
@@ -145,7 +145,7 @@ Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md). Include:
 - the **input prompt** that triggered the bug,
 - the **command line** or library call you used,
 - the **observed output** vs the **expected output**,
-- the package version (`aiprompting --version`) and Node version (`node --version`).
+- the package version (`ai-prompting --version`) and Node version (`node --version`).
 
 For security issues, see [SECURITY.md](SECURITY.md). Do not open a public issue.
 

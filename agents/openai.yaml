@@ -8,7 +8,7 @@
 # If you publish to a host that consumes a different schema, add a sibling
 # manifest (e.g. agents/gemini.yaml) without removing this one.
 
-name: aiprompting
+name: ai-prompting
 display_name: AIPrompting — Prompt Improver
 description: >
   Improve, rewrite, debug, evaluate, and compress prompts for any LLM agent.
@@ -41,9 +41,9 @@ references:
   - references/agent-compatibility.md
 
 cli:
-  command: aiprompting
-  doctor: aiprompting doctor
-  improve: aiprompting improve --prompt "<text>"
+  command: ai-prompting
+  doctor: ai-prompting doctor
+  improve: ai-prompting improve --prompt "<text>"
 
 triggers:
   - "improve my prompt"

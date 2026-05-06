@@ -41,7 +41,7 @@ function checkPackageJson(root: string): { check: DoctorCheck; pkg?: Record<stri
         name: 'package.json present',
         ok: false,
         detail: pj,
-        fix: 'Run from inside the aiprompting package directory.',
+        fix: 'Run from inside the ai-prompting package directory.',
       },
     };
   }
@@ -50,14 +50,14 @@ function checkPackageJson(root: string): { check: DoctorCheck; pkg?: Record<stri
     const bin = pkg.bin;
     const hasBin =
       typeof bin === 'string' ||
-      (typeof bin === 'object' && bin !== null && 'aiprompting' in (bin as Record<string, unknown>));
+      (typeof bin === 'object' && bin !== null && 'ai-prompting' in (bin as Record<string, unknown>));
     return {
       pkg,
       check: {
         name: 'package.json valid + bin entry',
         ok: hasBin,
         detail: `version ${String(pkg.version || '?')}`,
-        fix: hasBin ? undefined : 'Add a "bin": {"aiprompting": "bin/aiprompting"} entry.',
+        fix: hasBin ? undefined : 'Add a "bin": {"ai-prompting": "bin/ai-prompting"} entry.',
       },
     };
   } catch (e) {
@@ -113,9 +113,9 @@ function checkReferences(root: string): DoctorCheck {
 }
 
 function checkBin(root: string): DoctorCheck {
-  const bin = path.join(root, 'bin', 'aiprompting');
+  const bin = path.join(root, 'bin', 'ai-prompting');
   if (!fs.existsSync(bin)) {
-    return { name: 'bin/aiprompting shim', ok: false, fix: 'Create the bin/aiprompting shim script.' };
+    return { name: 'bin/ai-prompting shim', ok: false, fix: 'Create the bin/ai-prompting shim script.' };
   }
   let executable = false;
   try {
@@ -125,7 +125,7 @@ function checkBin(root: string): DoctorCheck {
     executable = false;
   }
   return {
-    name: 'bin/aiprompting executable',
+    name: 'bin/ai-prompting executable',
     ok: executable,
     detail: bin,
     fix: executable ? undefined : `chmod +x ${bin}`,

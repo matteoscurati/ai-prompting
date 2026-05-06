@@ -1,12 +1,12 @@
 ---
-description: Improve, rewrite, debug, or compress a prompt for any LLM agent. Applies the aiprompting Skill — strips padding, scaffolds with role/objective/context/task/constraints/output_format/quality_bar, scores 0-100, surfaces explicit assumptions. Use when the user asks to make a prompt better, more reliable, cheaper, clearer, structured, or model-specific.
+description: Improve, rewrite, debug, or compress a prompt for any LLM agent. Applies the ai-prompting Skill — strips padding, scaffolds with role/objective/context/task/constraints/output_format/quality_bar, scores 0-100, surfaces explicit assumptions. Use when the user asks to make a prompt better, more reliable, cheaper, clearer, structured, or model-specific.
 argument-hint: <prompt to improve> [--mode final_only|compact|standard|diagnostic] [--target claude|openai|gemini|local] [--task <type>] [--language it|en] [--audience "..."] [--token-budget minimal|balanced|generous] [--clarify auto|always|never]
 allowed-tools: Read Bash
 ---
 
-# /aiprompting:improve
+# /ai-prompting:improve
 
-Apply the **aiprompting** prompt-improvement procedure to the prompt the user supplies in `$ARGUMENTS`.
+Apply the **ai-prompting** prompt-improvement procedure to the prompt the user supplies in `$ARGUMENTS`.
 
 ## Decision flow
 
@@ -111,14 +111,14 @@ For English prompts, use `## Improved prompt / ## What improved / ## Estimated i
 If the user prefers a deterministic baseline (no LLM-side rewrite), or wants a fast precheck, you may run:
 
 ```bash
-npx aiprompting improve --prompt "$ARGUMENTS" --mode standard
+npx ai-prompting improve --prompt "$ARGUMENTS" --mode standard
 ```
 
 Use this only when the user explicitly asks for "deterministic" / "rule-based" / "no creativity" output. The CLI scaffolds and strips padding without semantic rewriting; the slash command's default behavior (semantic rewrite by you) is richer.
 
 ## References (load only when needed)
 
-If the package is installed locally (e.g. as a Skill in `~/.claude/skills/aiprompting/` or a symlink), deeper guidance lives in `references/`:
+If the package is installed locally (e.g. as a Skill in `~/.claude/skills/ai-prompting/` or a symlink), deeper guidance lives in `references/`:
 
 - `references/prompt-quality-rubric.md` — full 100-point breakdown
 - `references/prompt-patterns.md` — task-specific scaffolds

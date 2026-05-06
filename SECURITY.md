@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-The `aiprompting` package is in active development. Security fixes are applied to the latest minor release line.
+The `ai-prompting` package is in active development. Security fixes are applied to the latest minor release line.
 
 | Version | Supported |
 |---|---|
@@ -16,7 +16,7 @@ The `aiprompting` package is in active development. Security fixes are applied t
 If you discover a security issue, please report it privately:
 
 - **Email:** matteo.scurati@gmail.com
-- **GitHub Security Advisories:** [github.com/matteoscurati/aiprompting/security/advisories/new](https://github.com/matteoscurati/aiprompting/security/advisories/new)
+- **GitHub Security Advisories:** [github.com/matteoscurati/ai-prompting/security/advisories/new](https://github.com/matteoscurati/ai-prompting/security/advisories/new)
 
 Include in your report:
 
