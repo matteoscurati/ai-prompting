@@ -68,3 +68,16 @@ When the policy says "do not ask" but you still have unknowns:
 ## Anti-pattern: clarification creep
 
 If the user has given you any executable starting point, **act first**, ask second. A flawed first pass that surfaces assumptions is faster to correct than a question loop. Only loop on questions when the cost of wrong is high (see "high-risk domain" above).
+
+## Refinement loop
+
+Triggered when the user picks Choice 2 ("Modifica" / "Refine") in step 9 of the Skill — the post-improvement execution offer. The loop converts the assumptions surfaced in the previous pass into targeted questions, folds the answers back into `<context>`, and re-runs the rewrite.
+
+1. **Identify candidates.** From the current improved prompt, list every `[ASSUMPTION: ...]` in `<context>` and every implicit assumption baked into `<role>` / `<objective>` / `<constraints>`. Rank by load-bearing weight: which one would change the rewrite most if flipped?
+2. **Pick top 1-3.** Never more than 3 questions per cycle.
+3. **Format as multiple-choice.** Reuse the standard clarification block format. Ask one at a time only when later questions depend on earlier answers; otherwise batch.
+4. **Fold answers in.** Replace the corresponding `[ASSUMPTION: ...]` markers with the user's confirmed values. If the user volunteered extra detail, weave it into `<context>`.
+5. **Re-run steps 6-9.** Strip padding (typically a no-op on a second pass), rewrite, re-score, present, append the choice block again.
+6. **Cap at 3 cycles.** Track cycle count. After cycle 3, present the choice block with Choice 2 marked `(unavailable, max refinements reached)` and force Run / Exit.
+
+The cap exists to avoid the "infinite refinement" anti-pattern. If the user is still uncertain after three rounds of MCQ, the prompt is probably underspecified at the spec level — better to Run, see the actual output, and iterate from concrete results than to keep nibbling at the spec.

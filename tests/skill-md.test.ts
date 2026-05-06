@@ -1,0 +1,48 @@
+import { test } from 'node:test';
+import { strict as assert } from 'node:assert';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+// Tests run from dist/tests/, so the package root is two levels up.
+const packageRoot = join(__dirname, '..', '..');
+const skillContent = readFileSync(join(packageRoot, 'SKILL.md'), 'utf8');
+const slashContent = readFileSync(
+  join(packageRoot, '.claude', 'commands', 'improve.md'),
+  'utf8'
+);
+
+test('SKILL.md: Italian follow-up choice markers present', () => {
+  assert.match(skillContent, /\*\*Esegui\*\*[^—]*—\s*applica subito/);
+  assert.match(skillContent, /\*\*Modifica\*\*[^—]*—\s*voglio raffinare/);
+  assert.match(skillContent, /\*\*Esci\*\*[^—]*—\s*copio io/);
+});
+
+test('SKILL.md: English follow-up choice markers present', () => {
+  assert.match(skillContent, /\*\*Run\*\*[^—]*—\s*apply the improved prompt/);
+  assert.match(skillContent, /\*\*Refine\*\*[^—]*—\s*ask me targeted questions/);
+  assert.match(skillContent, /\*\*Exit\*\*[^—]*—\s*I'll copy/);
+});
+
+test('SKILL.md: refinement-loop cross-reference present', () => {
+  assert.match(
+    skillContent,
+    /references\/clarification-policy\.md#refinement-loop/
+  );
+});
+
+test('Slash command: choice markers present (it + en)', () => {
+  for (const marker of ['Esegui', 'Modifica', 'Esci', 'Run', 'Refine', 'Exit']) {
+    assert.match(
+      slashContent,
+      new RegExp(`\\*\\*${marker}\\*\\*`),
+      `slash command missing marker **${marker}**`
+    );
+  }
+});
+
+test('clarification-policy.md: refinement-loop section anchored', () => {
+  const policyPath = join(packageRoot, 'references', 'clarification-policy.md');
+  const policy = readFileSync(policyPath, 'utf8');
+  // The Skill links to #refinement-loop; ensure the heading exists.
+  assert.match(policy, /^## Refinement loop$/m);
+});

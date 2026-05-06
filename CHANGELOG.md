@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] — 2026-05-06
+
+### Added
+
+- **Step 9 — post-improvement execution offer (Skill only).** After the
+  rewrite, the agent appends a 3-choice block:
+  1. **Run** / **Esegui** — apply the improved prompt now (only the
+     `## Improved prompt` / `## Prompt migliorato` body; meta sections are
+     not part of the instruction).
+  2. **Refine** / **Modifica** — enter a Q&A loop where the most
+     load-bearing assumptions become multiple-choice questions. Cap at
+     3 cycles, then Choice 2 is disabled.
+  3. **Exit** / **Esci** — close with one line.
+  Anything else → the agent asks "Did you mean Run (1), Refine (2), or
+  Exit (3)?" before continuing.
+- Italian + English templates for the choice block in `SKILL.md` and the
+  shipped slash command (`.claude/commands/improve.md`).
+- `references/clarification-policy.md` — new "Refinement loop" section
+  documenting the algorithm for Choice 2 (assumption identification,
+  MCQ format, fold-in, re-run, 3-cycle cap).
+- `references/agent-compatibility.md` — note on hosts without multi-turn
+  slash-command support: Choice 1 falls back to clipboard copy, Choice 2
+  is unavailable on those hosts.
+- `tests/skill-md.test.ts` — verifies Italian + English follow-up markers
+  exist in `SKILL.md` and `.claude/commands/improve.md`, and that the
+  refinement-loop anchor is reachable.
+- Regression test in `tests/prompt-improver.test.ts` — the deterministic
+  CLI must NEVER emit the choice block in any mode/language combination.
+
+### Notes
+
+- **Pure-Markdown contract.** No TypeScript code changes; `evaluator.ts`,
+  `prompt-improver.ts`, and `cli.ts` are byte-identical to 0.1.4. The
+  feature lives entirely in the agent host's interpretation of `SKILL.md`.
+- Skipped in `final_only` mode so piping stays clean.
+- Skipped entirely when invoked from the deterministic CLI (no agent on
+  the other side to interpret the reply).
+
 ## [0.1.4] — 2026-05-05
 
 Documentation overhaul + npm publish readiness. No functional changes to the

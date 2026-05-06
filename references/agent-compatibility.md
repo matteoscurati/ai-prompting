@@ -65,6 +65,7 @@ Adapter notes per target. Apply only when the user names a target; otherwise def
 - **Trigger description matters most.** Front-load triggers and use cases in the SKILL/manifest description.
 - **Keep entrypoint compact.** Push depth into `references/` to keep the host's context window cheap.
 - **Compose well.** Don't duplicate other Skills' responsibilities; reference them.
+- **Multi-turn slash commands.** Step 9 of the Skill (offer execution) assumes the host can carry conversational state across turns inside a slash command. Most hosts can — Claude Code, Codex CLI, Cursor, Gemini CLI all do. On hosts without multi-turn state (rare; some embedded chat widgets, certain Codex CLI configs in non-interactive mode), the choice block degrades: Choice 1 (Run) falls back to "copy this block" with the improved prompt body fenced for clipboard copy, and Choice 2 (Refine) is unavailable since the refinement loop requires multi-turn — only Run / Exit remain.
 
 ## Cross-vendor neutral scaffold (default when no target specified)
 
