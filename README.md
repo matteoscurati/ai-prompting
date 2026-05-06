@@ -310,14 +310,14 @@ More examples in [`examples/`](examples/).
 $ npx aiprompting doctor
 AIPrompting Doctor
 ✓ Node.js >= 18 (node v20.10.0)
-✓ package.json valid + bin entry (version 0.1.4)
+✓ package.json valid + bin entry (version 0.1.6)
 ✓ SKILL.md frontmatter (name, description) (name ✓, description ✓)
 ✓ references/ files (5/5)
 ✓ bin/aiprompting executable
 ✓ compiled CLI artifact (dist)
 ✓ smoke test (improvePrompt) (improved length=842, delta=43)
 Status: OK
-Node: 20.10.0 | Package: 0.1.4
+Node: 20.10.0 | Package: 0.1.6
 ```
 
 If a check fails, the doctor prints a `fix:` line for it.
