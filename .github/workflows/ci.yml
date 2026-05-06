@@ -22,15 +22,13 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
-      - name: Test
-        run: node --test dist/tests/*.test.js
+      - name: Test (build + node --test via package script)
+        run: npm test
 
       - name: Doctor
-        run: node dist/src/cli.js doctor
+        run: npm run doctor

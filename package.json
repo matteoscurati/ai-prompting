@@ -47,7 +47,7 @@
     "doctor": "node dist/src/cli.js doctor",
     "install-command": "node scripts/install-command.js",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "npm test && npm run doctor"
   },
   "publishConfig": {
     "access": "public"
