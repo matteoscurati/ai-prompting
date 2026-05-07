@@ -82,7 +82,7 @@ Nota: stima euristica, non garanzia.
 
 For English prompts, use `## Improved prompt / ## What improved / ## Estimated impact / ## Rubric (diagnostic) / ## Assumptions`.
 
-10. **Offer execution.** After the output block, append a 3-choice prompt. Skip in `final_only` (raw output for piping); show in `compact` / `standard` / `diagnostic`.
+10. **Offer execution.** After the output block, append a 2-choice prompt. Skip in `final_only` (raw output for piping); show in `compact` / `standard` / `diagnostic`.
 
     **Italian template:**
 
@@ -91,7 +91,8 @@ For English prompts, use `## Improved prompt / ## What improved / ## Estimated i
     ## Cosa fai adesso?
     1. **Esegui** — applica subito il prompt migliorato (solo il blocco "## Prompt migliorato", non il resto).
     2. **Modifica** — voglio raffinare prima; fammi domande mirate.
-    3. **Esci** — copio io quello che mi serve.
+
+    _Non rispondere o scrivi qualcos'altro per chiudere il giro._
     ```
 
     **English template:**
@@ -101,10 +102,11 @@ For English prompts, use `## Improved prompt / ## What improved / ## Estimated i
     ## What next?
     1. **Run** — apply the improved prompt now (only the "## Improved prompt" block, not the rest).
     2. **Refine** — ask me targeted questions before running.
-    3. **Exit** — I'll copy what I need.
+
+    _Reply with anything else (or nothing) to close out._
     ```
 
-    **Behavior.** Choice 1 → treat the body of the `## Improved prompt` / `## Prompt migliorato` code block as the user's next turn; meta sections (Cosa è migliorato / Impatto stimato / Assunzioni / Rubric) are not part of that instruction. Choice 2 → enter the refinement loop (`references/clarification-policy.md#refinement-loop`); max 3 cycles, then Choice 2 is disabled and only Run / Exit remain. Choice 3 → close with one line. Anything else → ask "Did you mean Run (1), Refine (2), or Exit (3)?" before continuing.
+    **Behavior.** Choice 1 → treat the body of the `## Improved prompt` / `## Prompt migliorato` code block as the user's next turn; meta sections (Cosa è migliorato / Impatto stimato / Assunzioni / Rubric) are not part of that instruction. Choice 2 → enter the refinement loop (`references/clarification-policy.md#refinement-loop`); default cap 3 cycles, type `unlock` to keep refining. Anything else, or no reply → close gracefully without further prompting.
 
 ## Optional: deterministic CLI fallback
 

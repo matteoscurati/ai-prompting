@@ -11,16 +11,18 @@ const slashContent = readFileSync(
   'utf8'
 );
 
-test('SKILL.md: Italian follow-up choice markers present', () => {
+test('SKILL.md: Italian follow-up choice markers present (2-choice)', () => {
   assert.match(skillContent, /\*\*Esegui\*\*[^—]*—\s*applica subito/);
   assert.match(skillContent, /\*\*Modifica\*\*[^—]*—\s*voglio raffinare/);
-  assert.match(skillContent, /\*\*Esci\*\*[^—]*—\s*copio io/);
+  // Esci was removed in favor of "no reply = exit"; assert it's gone.
+  assert.doesNotMatch(skillContent, /\*\*Esci\*\*/);
 });
 
-test('SKILL.md: English follow-up choice markers present', () => {
+test('SKILL.md: English follow-up choice markers present (2-choice)', () => {
   assert.match(skillContent, /\*\*Run\*\*[^—]*—\s*apply the improved prompt/);
   assert.match(skillContent, /\*\*Refine\*\*[^—]*—\s*ask me targeted questions/);
-  assert.match(skillContent, /\*\*Exit\*\*[^—]*—\s*I'll copy/);
+  // Exit was removed in favor of "no reply = exit"; assert it's gone.
+  assert.doesNotMatch(skillContent, /\*\*Exit\*\*/);
 });
 
 test('SKILL.md: refinement-loop cross-reference present', () => {
@@ -30,14 +32,17 @@ test('SKILL.md: refinement-loop cross-reference present', () => {
   );
 });
 
-test('Slash command: choice markers present (it + en)', () => {
-  for (const marker of ['Esegui', 'Modifica', 'Esci', 'Run', 'Refine', 'Exit']) {
+test('Slash command: choice markers present (it + en, 2-choice)', () => {
+  for (const marker of ['Esegui', 'Modifica', 'Run', 'Refine']) {
     assert.match(
       slashContent,
       new RegExp(`\\*\\*${marker}\\*\\*`),
       `slash command missing marker **${marker}**`
     );
   }
+  // The 3rd choice (Esci/Exit) was removed; ensure it's gone.
+  assert.doesNotMatch(slashContent, /\*\*Esci\*\*/);
+  assert.doesNotMatch(slashContent, /\*\*Exit\*\*/);
 });
 
 test('clarification-policy.md: refinement-loop and rendering sections anchored', () => {

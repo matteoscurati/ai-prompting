@@ -65,7 +65,21 @@ Adapter notes per target. Apply only when the user names a target; otherwise def
 - **Trigger description matters most.** Front-load triggers and use cases in the SKILL/manifest description.
 - **Keep entrypoint compact.** Push depth into `references/` to keep the host's context window cheap.
 - **Compose well.** Don't duplicate other Skills' responsibilities; reference them.
-- **Multi-turn slash commands.** Step 9 of the Skill (offer execution) assumes the host can carry conversational state across turns inside a slash command. Most hosts can — Claude Code, Codex CLI, Cursor, Gemini CLI all do. On hosts without multi-turn state (rare; some embedded chat widgets, certain Codex CLI configs in non-interactive mode), the choice block degrades: Choice 1 (Run) falls back to "copy this block" with the improved prompt body fenced for clipboard copy, and Choice 2 (Refine) is unavailable since the refinement loop requires multi-turn — only Run / Exit remain.
+- **Multi-turn slash commands.** Step 9 of the Skill (offer execution) assumes the host can carry conversational state across turns inside a slash command. Most hosts can; the table below documents who supports the two mechanics step 9 relies on:
+  - **Block-as-next-turn:** when the user picks Run, the host re-injects the body of the `## Improved prompt` block as the user's next turn instead of forcing copy/paste.
+  - **Refinement loop:** when the user picks Refine, the host carries state across multiple turns to fold answers into the rewrite.
+
+  | Host | Block-as-next-turn | Refinement loop | Notes |
+  |---|---|---|---|
+  | Claude Code | ✓ native | ✓ | Skill conversation persists; the agent reads the block and runs |
+  | Cursor | ✓ native | ✓ | Same pattern |
+  | OpenAI Codex CLI (interactive) | ✓ | ✓ | Multi-turn supported in `chat` mode |
+  | OpenAI Codex CLI (non-interactive `-p`) | ✗ | ✗ | Single-shot; the choice block degrades to copy-paste |
+  | Gemini CLI | ✓ | ✓ | |
+  | Plain ChatGPT / Claude.ai web | ✓ | ✓ | The Skill is rendered inline; user replies in chat |
+  | Embedded chat widgets / single-shot | ✗ | ✗ | Show the improved prompt fenced for clipboard; suppress the choice block |
+
+  When both mechanics are unavailable, the Skill should suppress the step-9 choice block entirely and emit only the improved prompt + score; the user copy/pastes manually.
 - **Interactive question primitives.** When asking clarifications (step 5) or driving the refinement loop (step 9 Choice 2), prefer the host's structured-choice tool over plain markdown MCQ. Claude Code exposes `AskUserQuestion` (chips, structured reply, up to 4 questions per call); Cursor has an equivalent widget. Codex CLI and Gemini CLI as of 2026 do not have one — fall back to the markdown clarification block. The user-facing benefit is one-click replies; the agent-facing benefit is structured answers (no free-text parsing). Full rules: [rendering](clarification-policy.md#rendering).
 
 ## Cross-vendor neutral scaffold (default when no target specified)

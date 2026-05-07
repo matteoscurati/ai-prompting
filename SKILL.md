@@ -30,7 +30,7 @@ Do **not** invoke this Skill when the user simply wants you to *answer* a questi
 6. **Rewrite** using the smallest effective structure (see [prompt-patterns](references/prompt-patterns.md)).
 7. **Score** original vs improved against the rubric (see [prompt-quality-rubric](references/prompt-quality-rubric.md)).
 8. **Return** the result in the requested output mode.
-9. **Offer execution.** After the output block, append a 3-choice prompt asking what to do next. Skip in `final_only` (raw output for piping); show in `compact` / `standard` / `diagnostic`. Skip entirely when invoked from the deterministic CLI (no agent to interpret the reply).
+9. **Offer execution.** After the output block, append a 2-choice prompt asking what to do next. Skip in `final_only` (raw output for piping); show in `compact` / `standard` / `diagnostic`. Skip entirely when invoked from the deterministic CLI (no agent to interpret the reply).
 
    **Italian template:**
 
@@ -39,7 +39,8 @@ Do **not** invoke this Skill when the user simply wants you to *answer* a questi
    ## Cosa fai adesso?
    1. **Esegui** — applica subito il prompt migliorato (solo il blocco "## Prompt migliorato", non il resto).
    2. **Modifica** — voglio raffinare prima; fammi domande mirate.
-   3. **Esci** — copio io quello che mi serve.
+
+   _Non rispondere o scrivi qualcos'altro per chiudere il giro._
    ```
 
    **English template:**
@@ -49,10 +50,11 @@ Do **not** invoke this Skill when the user simply wants you to *answer* a questi
    ## What next?
    1. **Run** — apply the improved prompt now (only the "## Improved prompt" block, not the rest).
    2. **Refine** — ask me targeted questions before running.
-   3. **Exit** — I'll copy what I need.
+
+   _Reply with anything else (or nothing) to close out._
    ```
 
-   **Behavior.** Choice 1 → treat the body of the `## Improved prompt` / `## Prompt migliorato` code block as the user's next turn; the meta sections (Cosa è migliorato / Impatto stimato / Assunzioni / Rubric) are not part of that instruction. Choice 2 → enter the [refinement loop](references/clarification-policy.md#refinement-loop) (max 3 cycles, then Choice 2 is disabled). Choice 3 → close with one line. Anything else → ask "Did you mean Run (1), Refine (2), or Exit (3)?" before continuing.
+   **Behavior.** Choice 1 → treat the body of the `## Improved prompt` / `## Prompt migliorato` code block as the user's next turn; the meta sections (Cosa è migliorato / Impatto stimato / Assunzioni / Rubric) are not part of that instruction. Choice 2 → enter the [refinement loop](references/clarification-policy.md#refinement-loop) (default cap 3 cycles; the user can type `unlock` to keep refining). Anything else, or no reply → close gracefully without further prompting; do not loop asking the user to disambiguate. The MCQ is a hint, not a gate.
 
 ## Output modes
 

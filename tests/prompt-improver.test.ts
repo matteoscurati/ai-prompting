@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { improvePrompt, detectLanguage, inferTaskType } from '../src/prompt-improver';
 
-// The post-improvement choice block (Esegui/Modifica/Esci, Run/Refine/Exit) is
-// a Skill-only feature — the deterministic CLI must never emit it because there
-// is no agent on the other side to interpret a "1"/"2"/"3" reply.
+// The post-improvement choice block (Esegui/Modifica, Run/Refine) is a
+// Skill-only feature — the deterministic CLI must never emit it because there
+// is no agent on the other side to interpret a "1"/"2" reply.
 test('improvePrompt: never emits the Skill follow-up choice block', () => {
   const modes = ['final_only', 'compact', 'standard', 'diagnostic'] as const;
   const languages = ['it', 'en'] as const;
