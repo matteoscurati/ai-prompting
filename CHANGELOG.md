@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] — 2026-05-07
+
+### Changed
+
+- **Post-improvement choice block: 2 options instead of 3.** Dropped
+  "Esci" / "Exit". Silence (no reply) or any non-MCQ answer now closes
+  the loop gracefully — that was already what users did in practice; the
+  explicit option was friction. The MCQ is now a hint, not a gate. Step 9
+  in `SKILL.md` and step 10 in `.claude/commands/improve.md` updated.
+- **Refinement loop: `unlock` escape after the 3-cycle cap.** Previously
+  Choice 2 was hard-disabled after cycle 3. The cap remains as the safe
+  default but typing `unlock` resets the counter once. Documented in
+  `references/clarification-policy.md` § Refinement loop step 6.
+- **Per-host execute-mechanic compat table.** Replaced the prose blurb in
+  `references/agent-compatibility.md` § Skill-based hosts with an explicit
+  table covering the two mechanics step 9 relies on: block-as-next-turn
+  (Run) and refinement loop (Refine). Documents which hosts degrade to
+  copy/paste so Skill consumers aren't surprised.
+
+### Tests
+
+- `tests/skill-md.test.ts` — `assert.doesNotMatch(... /Esci|Exit/)`
+  regression guards prevent accidental reintroduction of the 3rd choice.
+
+### Notes
+
+- Pure-content release. Zero TypeScript code changes. The deterministic
+  CLI output is byte-identical to 0.2.0.
+- Recommended migration for hosts that hard-coded "Run / Refine / Exit"
+  parsers: switch to "anything-but-1-or-2 = exit" logic.
+
 ## [0.2.0] — 2026-05-06
 
 ### Changed (BREAKING)
