@@ -13,17 +13,22 @@ Optimize both. The second matters more if the prompt will be reused.
 | `final_only` | smallest | Only the improved prompt block | Everything else |
 | `compact` | small | Improved prompt + 1-line score | Change list, rationale, assumptions |
 | `standard` | medium | Improved prompt + change list + score + assumptions | Per-category rationale |
-| `diagnostic` | largest | Standard + per-category rationale + alternative structures | (nothing — this is the exhaustive mode) |
+| `diagnostic` | largest | Standard + per-category rationale | (nothing — this is the exhaustive mode) |
 
 Default to `standard` unless the user signals otherwise.
 
 ## Per-`tokenBudget` rules for the *generated* prompt
 
-| Budget | Rule |
-|---|---|
-| `minimal` | Drop `<context>` and `<quality_bar>` if not load-bearing. Drop `<role>` if the task type is implicit. Inline constraints into `<task>`. |
-| `balanced` *(default)* | Full canonical scaffold. |
-| `generous` | Add few-shot examples (3–5), expanded `<quality_bar>`, fallback strategies. |
+| Budget | Rule | Deterministic CLI |
+|---|---|---|
+| `minimal` | Drop `<quality_bar>`. Drop `<context>` when it is not load-bearing — a bare `[ASSUMPTION: …]` placeholder is not; a real audience or user-supplied context is. Drop `<role>` if the task type is implicit. Inline constraints into `<task>`. | drops `<quality_bar>` and non-load-bearing `<context>`; keeps `<role>` and the constraints block |
+| `balanced` *(default)* | Full canonical scaffold. | same |
+| `generous` | Add few-shot examples (3–5), expanded `<quality_bar>`, fallback strategies. | expands `<quality_bar>`; does **not** invent examples |
+
+The third column exists because these two layers genuinely differ. The rules are written for an
+agent applying the Skill, which can judge "load-bearing" and write examples worth the tokens. The
+CLI does the subset that is decidable without a model. Read a row as a CLI spec and you will
+document behavior that does not exist — that mistake shipped once already.
 
 ## Padding to strip from any prompt
 

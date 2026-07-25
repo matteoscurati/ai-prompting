@@ -28,6 +28,19 @@ Do not ask when:
 - Briefly explain *why* a question matters only if non-obvious.
 - Do **not** echo the user's prompt back at them; show you've read it.
 
+## Policy overrides
+
+The `clarify` option (`--clarify`) overrides the judgement above:
+
+| Value | Behavior |
+|---|---|
+| `auto` *(default)* | Apply the rules on this page. |
+| `always` | Ask even when the prompt is clear. Still capped at 3 questions, still prefer structured choices. |
+| `never` | Never ask. Proceed with explicit `[ASSUMPTION: …]` markers. In a **high-risk domain** do not stay silent — prepend one warning line (`⚠ Dominio ad alto rischio: assunzioni non verificate.` / `⚠ High-risk domain: assumptions unverified.`) and continue. |
+
+`never` suppresses the question, not the risk. The warning line is what keeps the user able to
+catch a wrong assumption in a domain where being wrong is expensive.
+
 ## Rendering
 
 Markdown MCQ is the universal fallback. **When the host provides a

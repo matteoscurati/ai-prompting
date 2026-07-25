@@ -83,14 +83,14 @@ const HALLUCINATION_GUARDS = [
   'segna le assunzioni',
 ];
 
+// Prose signals only. The bare tags `<success_criteria` and `<quality_bar` used
+// to live here, which handed out the full 4 points for an empty tag.
 const SUCCESS_CRITERIA_KEYWORDS = [
   'success criteria',
   'criteri di successo',
   'acceptance criteria',
   'criteri di accettazione',
   'definition of done',
-  '<success_criteria',
-  '<quality_bar',
 ];
 
 const CONSTRAINT_KEYWORDS = [
@@ -156,6 +156,36 @@ function detectXmlTag(text: string, tag: string): boolean {
   return re.test(text);
 }
 
+const SECTION_RE_CACHE: Map<string, RegExp> = new Map();
+function sectionContent(text: string, tag: string): string | null {
+  let re = SECTION_RE_CACHE.get(tag);
+  if (!re) {
+    re = new RegExp(`<\\s*${tag}\\s*>([\\s\\S]*?)<\\/\\s*${tag}\\s*>`, 'i');
+    SECTION_RE_CACHE.set(tag, re);
+  }
+  const m = text.match(re);
+  return m ? m[1].trim() : null;
+}
+
+/** A placeholder is an admission that the section is empty, not content. */
+const PLACEHOLDER_RE = /^\[\s*(ASSUMPTION|ASSUNZIONE|TODO|TBD|PLACEHOLDER)\b[^\]]*\]$/i;
+
+/**
+ * A section earns credit only when it carries something.
+ *
+ * Scoring the *presence* of a tag made the rubric trivially gameable: junk
+ * wrapped in the canonical tags outscored a clear, constrained prose prompt.
+ * Since `improvePrompt` inserts these very tags and then scores its own output,
+ * presence-only credit also let the tool award itself points for its own
+ * scaffolding.
+ */
+function substantiveSection(text: string, tag: string): boolean {
+  const content = sectionContent(text, tag);
+  if (!content) return false;
+  if (PLACEHOLDER_RE.test(content)) return false;
+  return wordCount(content) >= 3;
+}
+
 function detectListItems(text: string): number {
   const numbered = (text.match(/^\s*\d+[.)]\s+\S/gm) || []).length;
   const bulleted = (text.match(/^\s*[-*•]\s+\S/gm) || []).length;
@@ -199,7 +229,7 @@ function scoreIntentClarity(f: Features): RubricCategoryScore {
     score += 3;
     reasons.push('Starts with concrete imperative or topic.');
   }
-  if (detectXmlTag(f.text, 'objective') || /\bobjective\b|\bobiettivo\b|\bgoal\b/i.test(f.text)) {
+  if (substantiveSection(f.text, 'objective') || /\bobjective\b|\bobiettivo\b|\bgoal\b/i.test(f.text)) {
     score += 3;
     reasons.push('Explicit objective present.');
   }
@@ -222,9 +252,9 @@ function scoreContextSufficiency(f: Features): RubricCategoryScore {
   let score = 6;
   const reasons: string[] = [];
 
-  if (detectXmlTag(f.text, 'context')) {
+  if (substantiveSection(f.text, 'context')) {
     score += 5;
-    reasons.push('<context> tag present.');
+    reasons.push('<context> carries content.');
   }
   if (/\bgiven\b|\bbackground\b|\bcontext\b|\bcontesto\b|\bdato\b|\bbackground:\b/i.test(f.text)) {
     score += 2;
@@ -256,9 +286,9 @@ function scoreTaskDecomposition(f: Features): RubricCategoryScore {
   const reasons: string[] = [];
   const items = detectListItems(f.text);
 
-  if (detectXmlTag(f.text, 'task') || detectXmlTag(f.text, 'process')) {
+  if (substantiveSection(f.text, 'task') || substantiveSection(f.text, 'process')) {
     score += 2;
-    reasons.push('Task/process tag present.');
+    reasons.push('Task/process section carries content.');
   }
   if (items >= 3) {
     score += 4;
@@ -287,9 +317,9 @@ function scoreConstraintSpecificity(f: Features): RubricCategoryScore {
   const hits = countMatchesIn(f.lower, CONSTRAINT_KEYWORDS);
   const numerics = (f.text.match(/\b\d+\s*(words?|parole|tokens?|chars?|caratteri|sentences?|frasi|bullets?|items?|lines?|righe)\b/gi) || []).length;
 
-  if (detectXmlTag(f.text, 'constraints')) {
+  if (substantiveSection(f.text, 'constraints')) {
     score += 3;
-    reasons.push('<constraints> tag present.');
+    reasons.push('<constraints> carries content.');
   }
   if (hits >= 3) {
     score += 2;
@@ -313,11 +343,11 @@ function scoreOutputFormat(f: Features): RubricCategoryScore {
   const max = 15;
   let score = 4;
   const reasons: string[] = [];
-  const hasFormatTag = detectXmlTag(f.text, 'output_format') || detectXmlTag(f.text, 'output');
+  const hasFormatTag = substantiveSection(f.text, 'output_format') || substantiveSection(f.text, 'output');
 
   if (hasFormatTag) {
     score += 6;
-    reasons.push('<output_format> tag present.');
+    reasons.push('<output_format> carries content.');
   }
   const formatHits = countMatchesIn(f.lower, FORMAT_TOKENS);
   if (formatHits >= 1) {
@@ -348,9 +378,9 @@ function scoreToolSource(f: Features): RubricCategoryScore {
   const reasons: string[] = [];
   const hits = countMatchesIn(f.lower, TOOL_KEYWORDS);
 
-  if (detectXmlTag(f.text, 'tools')) {
+  if (substantiveSection(f.text, 'tools')) {
     score += 4;
-    reasons.push('<tools> tag present.');
+    reasons.push('<tools> carries content.');
   }
   if (hits >= 2) {
     score += 3;
@@ -432,7 +462,10 @@ function scoreEvaluationCriteria(f: Features): RubricCategoryScore {
   const max = 5;
   let score = 1;
   const reasons: string[] = [];
-  if (hasAnyIn(f.lower, SUCCESS_CRITERIA_KEYWORDS)) {
+  // A bare <quality_bar/> tag used to be worth the full 4 points.
+  const hasSection =
+    substantiveSection(f.text, 'quality_bar') || substantiveSection(f.text, 'success_criteria');
+  if (hasSection || hasAnyIn(f.lower, SUCCESS_CRITERIA_KEYWORDS)) {
     score += 4;
     reasons.push('Success criteria present.');
   }

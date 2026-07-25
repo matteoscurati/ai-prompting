@@ -45,6 +45,25 @@ ai-prompting/
 
 ## Common contributions
 
+### Adding a new option
+
+`SKILL.md` § **Options** is the canonical definition of every option — its flag, values, default,
+and effect. The slash command and the CLI are adapters that map their own syntax onto it; neither
+redefines semantics.
+
+1. Add the row to the Options table in `SKILL.md`.
+2. Add the `flag → option` row to the table in `.claude/commands/improve.md`. Nothing else — no
+   values, no prose. `tests/skill-md.test.ts` fails if the two tables disagree in either direction.
+3. If the CLI implements it too, add it to the `VALID_*` unions and `buildOptions()` in
+   `src/cli.ts`, and to `PromptImproverOptions` in `src/types.ts`.
+4. Put the deep semantics in the relevant `references/*.md` file and link to the anchor from the
+   Options table.
+
+**Do not** copy procedure into `.claude/commands/improve.md`. It is an adapter: `$ARGUMENTS`
+handling, the flag mapping, and the resolution ladder to `SKILL.md`. The decision flow, output
+templates, padding list, scaffold, and choice block live in `SKILL.md` only, and the test suite
+enforces their absence from the adapter.
+
 ### Adding a new task type
 
 1. Add a regex pattern set to `TASK_TYPE_HINTS` in `src/prompt-improver.ts`.
@@ -61,6 +80,14 @@ ai-prompting/
 
 1. Append a section to `references/agent-compatibility.md` with the host's quirks.
 2. If the adapter changes the scaffold structurally (rare), add a small branch in `prompt-improver.ts::buildScaffold` keyed on `opts.targetAgent`. Keep the branch ≤ 10 lines; push prose into the reference.
+
+**The CLI has no `--target` flag on purpose.** It used to, and it did nothing —
+`--target local` and `--target claude` produced byte-identical output while the
+docs claimed the local adapter preserved "think step by step". Re-expose the flag
+only together with a branch that actually fires and a test that proves it, of the
+form "output for target A differs from target B in this specific way". A test
+asserting the flag reaches the options object is not that test — that is exactly
+the coverage `--target` and `--clarify` both had while being broken.
 3. If the host has its own slash-command directory, add ~5 lines to `scripts/install-command.js`:
    ```js
    {

@@ -28,7 +28,7 @@ Do **not** invoke this Skill when the user simply wants you to *answer* a questi
    - Critical missing info → ask up to 3 focused questions (see [clarification-policy](references/clarification-policy.md)). When the host has a structured-choice primitive (e.g. `AskUserQuestion` in Claude Code), prefer it over markdown MCQ — see [rendering rules](references/clarification-policy.md#rendering).
    - Otherwise → proceed and surface explicit `[ASSUMPTION: ...]` markers.
 6. **Rewrite** using the smallest effective structure (see [prompt-patterns](references/prompt-patterns.md)).
-7. **Score** original vs improved against the rubric (see [prompt-quality-rubric](references/prompt-quality-rubric.md)).
+7. **Score structural coverage** of original vs improved against the rubric (see [prompt-quality-rubric](references/prompt-quality-rubric.md)). It measures whether the prompt *declares* role/objective/constraints/format/criteria — not whether it asks for the right thing. Never present it as a quality or performance claim, and never report a confidence level.
 8. **Return** the result in the requested output mode.
 9. **Offer execution.** After the output block, append a 2-choice prompt asking what to do next. Skip in `final_only` (raw output for piping); show in `compact` / `standard` / `diagnostic`. Skip entirely when invoked from the deterministic CLI (no agent to interpret the reply).
 
@@ -54,20 +54,40 @@ Do **not** invoke this Skill when the user simply wants you to *answer* a questi
    _Reply with anything else (or nothing) to close out._
    ```
 
-   **Behavior.** Choice 1 → treat the body of the `## Improved prompt` / `## Prompt migliorato` code block as the user's next turn; the meta sections (Cosa è migliorato / Impatto stimato / Assunzioni / Rubric) are not part of that instruction. Choice 2 → enter the [refinement loop](references/clarification-policy.md#refinement-loop) (default cap 3 cycles; the user can type `unlock` to keep refining). Anything else, or no reply → close gracefully without further prompting; do not loop asking the user to disambiguate. The MCQ is a hint, not a gate.
+   **Behavior.** Choice 1 → treat the body of the `## Improved prompt` / `## Prompt migliorato` code block as the user's next turn; the meta sections (Cosa è migliorato / Copertura strutturale / Assunzioni / Rubric) are not part of that instruction. Choice 2 → enter the [refinement loop](references/clarification-policy.md#refinement-loop) (default cap 3 cycles; the user can type `unlock` to keep refining). Anything else, or no reply → close gracefully without further prompting; do not loop asking the user to disambiguate. The MCQ is a hint, not a gate.
 
-## Output modes
+## Options
 
-| Mode | Returns |
-|---|---|
-| `final_only` | Only the improved prompt block. Lowest token cost. |
-| `compact` | Improved prompt + 1-line "what changed" + score totals. |
-| `standard` *(default)* | Improved prompt + change list + score + assumptions. |
-| `diagnostic` | Standard + per-category rubric breakdown + alternative structures. |
+Every surface — slash command, CLI, library — maps onto this one set. This table is the canonical
+definition: adapters translate their own syntax into it and do not redefine semantics.
 
-If the user says "solo prompt" / "just the prompt" / "no explanation" → `final_only`.
-If the user asks "why" / "diagnose" / "explain in detail" → `diagnostic`.
-Otherwise default to `standard`.
+| Option | Flag | Values | Default | Effect |
+|---|---|---|---|---|
+| `mode` | `--mode` | `final_only` · `compact` · `standard` · `diagnostic` | `standard` | How much of the report to return — see below. |
+| `language` | `--language` | `it` · `en` | auto-detect | Output language; overrides the it-vs-en evidence scorer. |
+| `taskType` | `--task` | research · writing · coding · analysis · data-extraction · agentic-workflow · creative · business · education · general | inferred | Overrides the keyword classifier. |
+| `targetAgent` | `--target` | claude · openai · gemini · local · coding-agent · research-agent · tool-agent | none | Activates an adapter — see [agent-compatibility](references/agent-compatibility.md). |
+| `audience` | `--audience` | free text | none | Injected into `<context>` as `Audience: …`; suppresses the audience question. |
+| `tokenBudget` | `--token-budget` | `minimal` · `balanced` · `generous` | `balanced` | Size of the *generated* prompt — see [cost-control](references/cost-control.md). |
+| `clarify` | `--clarify` | `auto` · `always` · `never` | `auto` | Question policy — see [clarification-policy](references/clarification-policy.md#policy-overrides). |
+
+`targetAgent` is honored by the **Skill layer only** — an agent can genuinely adapt its rewrite.
+The deterministic CLI has no adapter branches, so it exposes no `--target` flag rather than
+pretending; see [agent-compatibility](references/agent-compatibility.md).
+
+**What each mode returns**
+
+- `final_only` — only the improved prompt block. Lowest token cost.
+- `compact` — improved prompt + 1-line "what changed" + score totals.
+- `standard` — improved prompt + change list + score + assumptions.
+- `diagnostic` — standard + per-category rubric breakdown with the reason for each score.
+
+**Reading options out of prose.** Users state these in natural language more often than as flags.
+An explicit flag always wins; otherwise infer: "solo prompt" / "just the prompt" / "no explanation"
+→ `mode: final_only`; "why" / "diagnose" / "in dettaglio" → `mode: diagnostic`; "veloce" /
+"compatto" / "brief" → `mode: compact`; "in italiano" / "in english" → `language`; "non chiedere" /
+"don't ask" → `clarify: never`; "minimale" / "cheap" / "il più corto possibile" →
+`tokenBudget: minimal`.
 
 ## Default output template (Italian)
 
@@ -83,18 +103,17 @@ Otherwise default to `standard`.
 - Vincoli: ...
 - Output: ...
 
-## Impatto stimato
+## Copertura strutturale
 Originale: X/100
 Migliorato: Y/100
-Delta stimato: +Z
-Confidenza: bassa/media/alta
-Nota: stima euristica, non garanzia.
+Delta: +Z
+Nota: misura la struttura dello scaffold, non la qualità della risposta.
 
 ## Assunzioni
 - ...
 ````
 
-For English use the same structure with headers `## Improved prompt / ## What improved / ## Estimated impact / ## Assumptions`.
+For English use the same structure with headers `## Improved prompt / ## What improved / ## Structural coverage / ## Assumptions`.
 For `compact` mode drop "Cosa è migliorato" and "Assunzioni"; keep one-line score.
 For `final_only` drop everything except `## Prompt migliorato` + the code block.
 
@@ -157,6 +176,8 @@ npx ai-prompting improve --file prompt.txt --mode diagnostic
 ```
 
 The CLI is useful for: smoke-testing the package, batch-processing prompts in CI, getting a deterministic baseline you can then refine semantically. The richer rewrite happens *inside the host agent* using the instructions on this page.
+
+When the user explicitly asks for "deterministic" / "rule-based" / "no creativity" output, run the CLI and return its result as-is instead of rewriting semantically.
 
 ## References (load only when needed)
 

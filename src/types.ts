@@ -25,11 +25,8 @@ export interface PromptImproverOptions {
   language?: 'it' | 'en';
   audience?: string;
   constraints?: string[];
-  preserveStyle?: boolean;
   tokenBudget?: TokenBudget;
   askClarifyingQuestions?: ClarificationPolicy;
-  includeScore?: boolean;
-  includeRationale?: boolean;
 }
 
 export interface RubricCategoryScore {
@@ -67,6 +64,7 @@ export interface ClarificationQuestion {
 export interface ImprovementChange {
   type:
     | 'added_section'
+    | 'dropped_section'
     | 'removed_padding'
     | 'normalized_whitespace'
     | 'wrapped_xml'
@@ -88,7 +86,6 @@ export interface ImprovementResult {
     before: RubricScore;
     after: RubricScore;
     delta: number;
-    confidence: 'low' | 'medium' | 'high';
   };
   assumptions: string[];
   changes: ImprovementChange[];

@@ -1,6 +1,20 @@
-# Prompt quality rubric (100 points)
+# Structural coverage rubric (100 points)
 
-Score both the *original* and the *improved* prompt across 9 categories. Total = 100. Always label the result as a heuristic estimate, never a guaranteed performance gain.
+Score both the *original* and the *improved* prompt across 9 categories. Total = 100.
+
+**What this measures:** whether a prompt *declares* the things that make prompts
+legible — role, objective, context, steps, constraints, output format, success
+criteria — and whether it avoids padding. **What it does not measure:** whether
+the prompt asks for the right thing, or how good the resulting answer will be. A
+prompt can score 90 and be pointed at entirely the wrong problem.
+
+Two consequences worth stating plainly:
+
+- **A high baseline is built in.** Every category has a non-zero floor, so even
+  an empty prompt lands near 40/100. Treat the number as a relative before/after
+  signal, never as an absolute grade.
+- **Sections earn credit only when they carry content.** A `<context>` holding
+  nothing but `[ASSUMPTION: ...]` scores as absent, because it is.
 
 | Category | Weight |
 |---|---|
@@ -108,15 +122,15 @@ For prompts that do not involve tools/sources, score around 5 (neutral).
 ## Reporting the delta
 
 ```
+Structural coverage
 Original: X/100
 Improved: Y/100
-Estimated delta: +Z
-Confidence: low | medium | high
+Delta: +Z
 ```
 
-Confidence levels:
-- **low** — small delta (<10), or the original prompt was already strong (>75).
-- **medium** — delta 10–30, structural improvements applied without changing intent.
-- **high** — delta >30 with clear before/after evidence on test cases.
+Do **not** report a confidence level. It used to be emitted, but it was only the
+absolute delta relabelled — it carried no independent evidence, and because it
+used `|delta|` it announced "high confidence" on a *regression*.
 
-Never claim measurable business impact unless the user provides test data.
+Never claim measurable business impact, and never claim the score correlates
+with output quality, unless there is an eval set to point at. There is not.

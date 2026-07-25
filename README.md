@@ -58,7 +58,7 @@ Concretely, on every prompt it:
 2. **Strips** padding that hurts modern reasoning models — `"you are a world-class…"`, `"take a deep breath"`, `"think step by step"`, `"I will tip you…"` plus Italian variants (`"sei un esperto di livello mondiale"`, `"fai un respiro profondo"`, `"pensaci passo passo"`).
 3. **Decides whether to ask** for clarification (only when info is critical, contradictions exist, or the domain is high-risk: legal, medical, financial, security, production code).
 4. **Rewrites** with a canonical XML scaffold (`<role>`, `<objective>`, `<context>`, `<task>`, `<constraints>`, `<output_format>`, `<quality_bar>`).
-5. **Scores** the prompt on a 100-point heuristic rubric (9 categories), before/after, with confidence.
+5. **Scores** structural coverage on a 100-point heuristic rubric (9 categories), before/after.
 6. **Surfaces** every assumption it made as `[ASSUMPTION: …]` — so you can correct without rerunning.
 
 ## How it works
@@ -129,7 +129,7 @@ node dist/src/cli.js doctor
 ```bash
 ai-prompting improve --prompt "Help me write something good"
 ai-prompting improve --file ./prompt.txt --mode diagnostic
-ai-prompting improve --prompt "..." --target claude --task research --token-budget minimal
+ai-prompting improve --prompt "..." --task research --token-budget minimal
 cat prompt.txt | ai-prompting improve --mode final_only
 ai-prompting doctor
 ai-prompting --help
@@ -142,16 +142,19 @@ ai-prompting --help
 | `--prompt <text>` | inline string | — | exclusive with `--file`/stdin |
 | `--file <path>` | filesystem path | — | UTF-8 |
 | `--mode <name>` | `final_only` / `compact` / `standard` / `diagnostic` | `standard` | see [Output modes](#output-modes) |
-| `--target <agent>` | claude / openai / gpt / gemini / local / coding-agent / research-agent / tool-agent | — | activates adapter rules from `references/agent-compatibility.md` |
 | `--task <type>` | research / writing / coding / analysis / data-extraction / agentic-workflow / creative / business / education / general | inferred | overrides the keyword classifier |
-| `--token-budget <level>` | `minimal` / `balanced` / `generous` | `balanced` | `minimal` drops `<context>` + `<quality_bar>` |
-| `--language <code>` | `it` / `en` | auto-detect | overrides the marker-based detector |
-| `--audience <text>` | free text | — | injected into `<context>`; suppresses the audience question |
+| `--token-budget <level>` | `minimal` / `balanced` / `generous` | `balanced` | `minimal` drops `<quality_bar>`, plus `<context>` when it is not load-bearing; `generous` expands the quality bar |
+| `--clarify <policy>` | `auto` / `always` / `never` | `auto` | `never` suppresses the questions but still emits a high-risk warning |
+| `--language <code>` | `it` / `en` | auto-detect | overrides the it-vs-en evidence scorer |
+| `--audience <text>` | free text | — | injected into `<context>`; suppresses the audience question; makes `<context>` load-bearing under `minimal` |
 | `--constraints <list>` | pipe-separated | — | e.g. `--constraints "max 200 words|no markdown"` |
 | `--no-score` | flag | off | suppresses score block |
 | `--no-rationale` | flag | off | suppresses per-category rationale (diagnostic) |
 | `--version` | flag | — | prints package version |
 | `--help` | flag | — | prints CLI help |
+
+Unknown flags, missing values, invalid enum values, and passing more than one input source are
+errors, not warnings — the CLI is meant to be safe in a CI gate.
 
 ## Slash command
 
@@ -197,7 +200,7 @@ const result: ImprovementResult = improvePrompt({
 });
 
 console.log(result.improved);          // string: the rewritten prompt
-console.log(result.scores);            // { before, after, delta, confidence }
+console.log(result.scores);            // { before, after, delta }
 console.log(result.assumptions);       // string[]: explicit assumptions
 console.log(result.clarifications);    // ClarificationQuestion[]
 console.log(result.changes);           // ImprovementChange[]: what was modified
@@ -271,7 +274,7 @@ You are a world-class expert. Take a deep breath. Help me write something good.
 <output_format>Structured, direct answer; length calibrated to task complexity.</output_format>
 <quality_bar>...</quality_bar>
 
-Original: 30/100  →  Improved: 79/100  (Δ +49, confidence: high)
+Structural coverage — Original: 30/100  →  Improved: 79/100  (Δ +49)
 ```
 
 ### An Italian prompt with persona padding
@@ -285,7 +288,7 @@ Sei un esperto di livello mondiale. Aiutami a scrivere una mail per chiedere un 
 - Stripped Italian padding (`Sei un esperto di livello mondiale`)
 - Nominalized opener (`Aiutami a scrivere…` → objective: `Scrivere una mail…`)
 - Task type → `writing`, role → `Senior editor con focus su chiarezza, ritmo e adeguatezza al pubblico.`
-- Score 32 → 84 (Δ +52, confidence: high)
+- Structural coverage 32 → 84 (Δ +52)
 
 ### A high-risk prompt — triggers clarification
 
@@ -328,7 +331,7 @@ If a check fails, the doctor prints a `fix:` line for it.
 
 **Does the CLI call an LLM?** No. Never. The CLI is rule-based: keyword detection, regex padding strippers, XML scaffolding, heuristic scoring. Zero API calls.
 
-**Will the score improve my real prompt performance?** The score is a heuristic estimate of *prompt structural quality*, not a measured behavioral outcome. Reliable measurement requires a golden test set on real models. The score correlates with quality in our own evals; it is not a guarantee.
+**Will the score improve my real prompt performance?** Unknown — the score does not measure that. It measures *structural coverage*: whether the prompt declares a role, an objective, constraints, an output format, and success criteria, and whether it avoids padding. A prompt can score 90 and still ask for the wrong thing. There is no eval set behind it, so no correlation with output quality is claimed.
 
 **Why not use a hosted prompt-improvement service?** Privacy, cost, reproducibility, and offline use. The deterministic CLI is the same on every machine. The Skill, when run by a host agent, never leaves the user's existing tool.
 
@@ -336,7 +339,9 @@ If a check fails, the doctor prints a `fix:` line for it.
 
 **Can I add a new task type / target agent?** Yes — see [CONTRIBUTING.md](CONTRIBUTING.md). It's two file edits and a regression test.
 
-**What happens to "think step by step"?** It's stripped. Modern reasoning models (Claude 4.x, GPT-5.x, Gemini 2.5+) reason adaptively; explicit CoT instructions are redundant or counterproductive. If you target a small/local model that does not reason internally, the adapter for `--target local` does not strip it.
+**What happens to "think step by step"?** The CLI always strips it. Modern reasoning models (Claude 4.x, GPT-5.x, Gemini 2.5+) reason adaptively, so explicit CoT instructions are redundant or counterproductive there — but that is not true of small local models, and the CLI has no adapter that knows the difference. Earlier versions of this FAQ claimed `--target local` preserved it; that was never implemented, and the flag has been removed from the CLI rather than left as a decorative no-op. If you are targeting a local model, keep the CoT line yourself, or apply the Skill through an agent, which does adapt.
+
+**Why is there no `--target` on the CLI?** Because it changed nothing. `--target local` and `--target claude` produced byte-identical output. `targetAgent` remains a Skill and library option, where an agent can genuinely adapt the rewrite; the deterministic CLI will get the flag back when it has real adapter branches and tests that prove they fire.
 
 **Where do I report issues?** [GitHub Issues](https://github.com/matteoscurati/ai-prompting/issues). Security: see [SECURITY.md](SECURITY.md).
 
@@ -344,7 +349,7 @@ If a check fails, the doctor prints a `fix:` line for it.
 
 - **CLI = deterministic baseline.** It guarantees structural scaffolding and padding removal; it does not perform semantic rewriting. The richer rewrite happens when an agent host applies the Skill.
 - **Scores are heuristic.** Useful for relative comparison (before vs after, variant A vs B); not a direct performance metric.
-- **Italian language detection** uses a small marker set (verbs + articles + common nouns); pass `--language en|it` for certainty.
+- **Language detection** weighs Italian evidence against English evidence (function words, action verbs, accents, elisions, Italian-only morphology) and picks the larger pile; English wins ties. Tokens shared by both languages are excluded so they cannot tip it. It is still a heuristic: a one-or-two-word prompt carries no evidence and falls back to English, and a third language is classified as English. Pass `--language en|it` for certainty.
 - **Padding patterns** are explicit regexes; novel padding phrases may slip through. Open an issue with the example.
 - **The Skill description** is dense to maximize triggering precision; tune for your host if needed.
 
