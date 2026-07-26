@@ -174,6 +174,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   table must agree with the `SKILL.md` Options table in both directions
   (same flag set, same flag→option mapping).
 
+### Packaging
+
+- **Compiled tests no longer ship.** The `files` whitelist listed `dist/`, and
+  `tsconfig.json` compiles `tests/**` alongside `src/**`, so every release since
+  0.1.0 shipped `dist/tests/` to consumers. Narrowed to `dist/src/`, which is all
+  `main`, `types`, and `bin/ai-prompting` resolve against: 40 files / 216.8 kB
+  unpacked becomes 30 files / 172.6 kB. `SKILL.md` and `references/` still ship —
+  the slash-command adapter resolves them via
+  `require.resolve('ai-prompting/SKILL.md')`.
+
 ### Notes
 
 - **Origin of this batch.** Most of the entries above came from an independent

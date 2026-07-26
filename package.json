@@ -30,7 +30,7 @@
   },
   "files": [
     "bin/",
-    "dist/",
+    "dist/src/",
     "scripts/",
     ".claude/",
     "SKILL.md",
