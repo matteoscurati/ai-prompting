@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Releases now authenticate with npm Trusted Publishing (OIDC).** The
+  `NPM_TOKEN` secret is gone. It had silently expired, and 0.3.0's tag push
+  failed with `E404 PUT /ai-prompting` — npm answers 404 rather than 401 on a
+  bad credential, so the failure reads as "package not found". That forced a
+  manual publish, which cost 0.3.0 its provenance attestation, exactly as 0.1.6
+  had before it. OIDC has nothing to expire.
+
+  **One-time setup is required on npmjs.com before the next tag** (Settings ->
+  Trusted Publisher: GitHub Actions / matteoscurati / ai-prompting /
+  `release.yml`, environment empty). Until it is done, tag pushes will fail.
+
+- **The release workflow gates properly.** `ci.yml` only runs on branches and
+  PRs, so a tag push used to reach `npm publish` having verified nothing but the
+  tag/version match. It now also refuses a tag that is not an ancestor of
+  `origin/main`, requires a matching `## [X.Y.Z]` CHANGELOG entry, re-runs
+  build + tests + doctor, and fails if compiled tests reappear in the tarball.
+  The publish step is idempotent — a re-run after a partial failure is a no-op
+  instead of a red X, which is what turned 0.3.0's retry into a second failure.
+  The tag reaches bash through the environment rather than `${{ }}`
+  interpolation, since git accepts `$(...)` in a tag name and this job can mint
+  a publish token.
+
+- **A GitHub release is created from the CHANGELOG section** for the tag.
+
+### Fixed
+
+- README's sample `doctor` output still showed `0.1.6`.
+
 ## [0.3.0] — 2026-07-25
 
 ### Security
