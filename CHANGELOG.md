@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.1] — 2026-07-27
 
 ### Changed
 
@@ -32,6 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a publish token.
 
 - **A GitHub release is created from the CHANGELOG section** for the tag.
+
+### Notes
+
+- **This is the first release published with provenance since 0.2.1.** 0.3.0
+  was published by hand after the token failure, and npm does not accept an
+  attestation for an already-published version — so that gap is permanent.
+  0.3.1 carries no functional change to the package: it exists to close the
+  release-infrastructure work and to restore an attested artifact.
 
 ### Fixed
 
